@@ -133,8 +133,32 @@ namespace PokeStar.Modules
          }
          else
          {
-            await ResponseMessage.SendErrorMessage(Context.Channel, "unregister", "This channel does not have any commands registered to it");
+            await ResponseMessage.SendErrorMessage(Context.Channel, "unregister", "This channel does not have any commands registered to it.");
          }
+      }
+
+      /// <summary>
+      /// Handle check command.
+      /// </summary>
+      /// <returns>Completed Task.</returns>
+      [Command("check")]
+      [Summary("Check command types channel is registerd for.")]
+      public async Task Check()
+      {
+         ulong guild = Context.Guild.Id;
+         ulong channel = Context.Channel.Id;
+
+         string registration = Connections.Instance().GetRegistration(guild, channel);
+
+         if (registration == null)
+         {
+            await ResponseMessage.SendInfoMessage(Context.Channel, $"This channel does not have any commands registered to it.");
+         }
+         else
+         {
+            await ResponseMessage.SendInfoMessage(Context.Channel, $"Channel is registered for the following command types {GenerateSummaryString(registration)}");
+         }
+
       }
 
       /// <summary>
