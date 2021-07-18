@@ -307,7 +307,28 @@ namespace PokeStar.Modules
          }
          else
          {
-            parent.AddRaid(time, location, Connections.GetPokemonFromPicture(boss.Name));
+            string bossName = Connections.GetPokemonFromPicture(boss.Name);
+
+            short calcTier = 0;
+
+            foreach (KeyValuePair<int, List<string>> tier in allBosses)
+            {
+               foreach (string potentialBoss in tier.Value)
+               {
+                  if (potentialBoss.Equals(bossName, StringComparison.OrdinalIgnoreCase))
+                  {
+                     calcTier = Global.RAID_TIER_STRING[tier.Key.ToString()];
+                  }
+               }
+            }
+            if (calcTier != 0)
+            {
+               parent.AddRaid(time, location, bossName);
+            }
+            else
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "addt", $"No raid bosses found for role {boss.Name}");
+            }
             await ModifyMessage(raidMessage, parent);
          }
          await Context.Message.DeleteAsync();

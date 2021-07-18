@@ -386,7 +386,7 @@ namespace PokeStar.Modules
 
          Raid raid;
          string fileName;
-         if (calcTier == 0)
+         if (calcTier != 0)
          {
             raid = new Raid(calcTier, time, location, bossName)
             {
@@ -464,7 +464,7 @@ namespace PokeStar.Modules
 
          RaidMule raid;
          string fileName;
-         if (calcTier == 0)
+         if (calcTier != 0)
          {
             raid = new RaidMule(calcTier, time, location, bossName)
             {
@@ -542,7 +542,7 @@ namespace PokeStar.Modules
 
          Raid raid;
          string fileName;
-         if (calcTier == 0)
+         if (calcTier != 0)
          {
             raid = new Raid(calcTier, time, location, (SocketGuildUser)Context.User, bossName)
             {
@@ -620,7 +620,7 @@ namespace PokeStar.Modules
 
          RaidMule raid;
          string fileName;
-         if (calcTier == 0)
+         if (calcTier != 0)
          {
             raid = new RaidMule(calcTier, time, location, (SocketGuildUser)Context.User, bossName)
             {
@@ -651,7 +651,7 @@ namespace PokeStar.Modules
          }
          else
          {
-            await ResponseMessage.SendErrorMessage(Context.Channel, "muleTraint", $"No raid bosses found for role {bossName}");
+            await ResponseMessage.SendErrorMessage(Context.Channel, "muleTraint", $"No raid bosses found for role {boss.Name}");
          }
          RemoveOldRaids();
       }
