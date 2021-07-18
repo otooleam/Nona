@@ -79,6 +79,7 @@ namespace PokeStar.ConnectionInterface
       {
          pokemonName = pokemonName.Replace("`", "");
          pokemonName = pokemonName.Replace(" ", "_");
+         pokemonName = pokemonName.Replace("-", "_");
          pokemonName = pokemonName.Replace(".", "");
          pokemonName = pokemonName.Replace("%", "");
          pokemonName = pokemonName.Replace("\'", "");

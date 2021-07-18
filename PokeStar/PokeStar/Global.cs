@@ -311,7 +311,7 @@ namespace PokeStar
       /// <summary>
       /// Boss emotes on a notify message limit.
       /// </summary>
-      public static readonly int LIMIT_RAID_BOSS_NOTIFY = 10;
+      public static readonly int LIMIT_RAID_BOSS_NOTIFY = 20;
 
       // Raid Group bits ******************************************************
 
