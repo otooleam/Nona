@@ -89,6 +89,33 @@ namespace PokeStar.ConnectionInterface
       }
 
       /// <summary>
+      /// Gets a Pokémon by its picture file.
+      /// </summary>
+      /// <param name="fileName">Name of the file.</param>
+      /// <returns>Pokémon name.</returns>
+      public static string GetPokemonFromPicture(string fileName)
+      {
+         Dictionary<string, string> ChangedPokemon = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+         {
+            ["Farfetchd"]          = "Farfetch'd",
+            ["Galarian_Farfetchd"] = "Galarian Farfetch'd",
+            ["Galarian_Mr_Mime"]   = "Galarian Mr. Mime",
+            ["Ho_Oh"]              = "Ho-Oh",
+            ["Mime_Jr"]            = "Mime Jr.",
+            ["Mr_Mime"]            = "Mr. Mime",
+            ["Mr_Rime"]            = "Mr. Rime",
+            ["Porygon_Z"]          = "Porygon-Z",
+            ["Sirfetchd"]          = "Sirfetch'd",
+            ["Unown_EX"]           = "Unown !",
+            ["Unown_QU"]           = "Unown ?",
+            ["Zygarde_10_Form"]    = "Zygarde 10% Form",
+            ["Zygarde_50_Form"]    = "Zygarde 50% Form",
+         };
+
+         return ChangedPokemon.ContainsKey(fileName) ? ChangedPokemon[fileName] : fileName.Replace('_', ' ');
+      }
+
+      /// <summary>
       /// Gets raid difficulty table.
       /// </summary>
       /// <returns>List of difficulties and definitions.</returns>
@@ -197,7 +224,7 @@ namespace PokeStar.ConnectionInterface
          {
             bossesChanged = bossesChanged || RaidBosses[tier].Count != newBosses[tier].Count || !RaidBosses[tier].All(newBosses[tier].Contains);
          }
-
+         
          if (bossesChanged)
          {
             if (SilphData.GetRaidBossesConfirmed())

@@ -278,6 +278,42 @@ namespace PokeStar.Modules
       }
 
       /// <summary>
+      /// Handle addt command.
+      /// </summary>
+      /// <param name="boss">Boss role of the raid.</param>
+      /// <param name="time">Time of the raid.</param>
+      /// <param name="location">Location of the raid.</param>
+      /// <returns>Completed Task.</returns>
+      [Command("addt")]
+      [Summary("Add a raid to the end of the raid train using a boss role.")]
+      [Remarks("Can only be run by the train\'s conductor." +
+               "Must be a reply to a raid train message.")]
+      [RegisterChannel('R')]
+      [RaidReply()]
+      public async Task Add([Summary("Boss role of the raid.")] IRole boss,
+                            [Summary("Time of the raid.")] string time,
+                            [Summary("Location of the raid.")][Remainder] string location)
+      {
+         ulong raidMessageId = Context.Message.Reference.MessageId.Value;
+         SocketUserMessage raidMessage = (SocketUserMessage)await Context.Channel.GetMessageAsync(raidMessageId);
+         RaidParent parent = raidMessages[raidMessageId];
+         if (parent.IsSingleStop())
+         {
+            await ResponseMessage.SendErrorMessage(Context.Channel, "add", $"Command must be a reply to a raid train or raid mule train message.");
+         }
+         else if (!Context.Message.Author.Equals(parent.Conductor))
+         {
+            await ResponseMessage.SendErrorMessage(Context.Channel, "add", $"Command can only be run by the current conductor.");
+         }
+         else
+         {
+            parent.AddRaid(time, location, Connections.GetPokemonFromPicture(boss.Name));
+            await ModifyMessage(raidMessage, parent);
+         }
+         await Context.Message.DeleteAsync();
+      }
+
+      /// <summary>
       /// Handle conductor command.
       /// </summary>
       /// <param name="conductor">User to make new conductor.</param>
