@@ -307,6 +307,7 @@ namespace PokeStar.Modules
          }
          else
          {
+            Dictionary<int, List<string>> allBosses = Connections.Instance().GetFullBossList();
             string bossName = Connections.GetPokemonFromPicture(boss.Name);
 
             short calcTier = 0;
