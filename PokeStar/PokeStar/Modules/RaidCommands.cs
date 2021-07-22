@@ -118,9 +118,9 @@ namespace PokeStar.Modules
          "5, legendary, L\n" +
          "7, mega, M\n")]
       [RegisterChannel('R')]
-      public async Task RaidMule([Summary("Tier of the raid.")] string tier,
-                                 [Summary("Time the raid will start.")] string time,
-                                 [Summary("Where the raid will be.")][Remainder] string location)
+      public async Task Mule([Summary("Tier of the raid.")] string tier,
+                             [Summary("Time the raid will start.")] string time,
+                             [Summary("Where the raid will be.")][Remainder] string location)
       {
          short calcTier = Global.RAID_TIER_STRING.ContainsKey(tier) ? Global.RAID_TIER_STRING[tier] : Global.INVALID_RAID_TIER;
          Dictionary<int, List<string>> allBosses = Connections.Instance().GetFullBossList();
@@ -200,9 +200,9 @@ namespace PokeStar.Modules
          "5, legendary, L\n" +
          "7, mega, M\n")]
       [RegisterChannel('R')]
-      public async Task RaidTrain([Summary("Tier of the raids.")] string tier,
-                                  [Summary("Time the train will start.")] string time,
-                                  [Summary("Where the train will start.")][Remainder] string location)
+      public async Task Train([Summary("Tier of the raids.")] string tier,
+                              [Summary("Time the train will start.")] string time,
+                              [Summary("Where the train will start.")][Remainder] string location)
       {
          short calcTier = Global.RAID_TIER_STRING.ContainsKey(tier) ? Global.RAID_TIER_STRING[tier] : Global.INVALID_RAID_TIER;
          Dictionary<int, List<string>> allBosses = Connections.Instance().GetFullBossList();
@@ -282,9 +282,9 @@ namespace PokeStar.Modules
          "5, legendary, L\n" +
          "7, mega, M\n")]
       [RegisterChannel('R')]
-      public async Task RaidMuleTrain([Summary("Tier of the raids.")] string tier,
-                                      [Summary("Time the train will start.")] string time,
-                                      [Summary("Where the train will start.")][Remainder] string location)
+      public async Task MuleTrain([Summary("Tier of the raids.")] string tier,
+                                  [Summary("Time the train will start.")] string time,
+                                  [Summary("Where the train will start.")][Remainder] string location)
       {
          short calcTier = Global.RAID_TIER_STRING.ContainsKey(tier) ? Global.RAID_TIER_STRING[tier] : Global.INVALID_RAID_TIER;
          Dictionary<int, List<string>> allBosses = Connections.Instance().GetFullBossList();
@@ -352,21 +352,13 @@ namespace PokeStar.Modules
       /// <param name="time">Time the raid will start.</param>
       /// <param name="location">Where the raid will be.</param>
       /// <returns>Completed Task.</returns>
-      [Command("raidt")]
+      [Command("raid")]
+      [Alias("raidt")]
       [Summary("Creates a new raid coordination message using a boss role.")]
-      [Remarks("Valid Tier values:\n" +
-         "0 (raid with no boss assigned)\n" +
-         "1, common, C\n" +
-         "2, uncommon, U\n" +
-         "3, rare, R\n" +
-         "4, premium, p\n" +
-         "5, legendary, L\n" +
-         "7, mega, M\n" +
-         "Requires a channel registered for raid notifications.")]
       [RegisterChannel('R')]
-      public async Task RaidT([Summary("Boss role of the raid.")] IRole boss,
-                              [Summary("Time the raid will start.")] string time,
-                              [Summary("Where the raid will be.")][Remainder] string location)
+      public async Task Raid([Summary("Boss role of the raid.")] IRole boss,
+                             [Summary("Time the raid will start.")] string time,
+                             [Summary("Where the raid will be.")][Remainder] string location)
       {
          Dictionary<int, List<string>> allBosses = Connections.Instance().GetFullBossList();
          string bossName = Connections.GetPokemonFromPicture(boss.Name);
@@ -429,22 +421,13 @@ namespace PokeStar.Modules
       /// <param name="time">Time the raid will start.</param>
       /// <param name="location">Where the raid will be.</param>
       /// <returns>Completed Task.</returns>
-      [Command("mulet")]
-      [Alias("raidmulet")]
+      [Command("mule")]
+      [Alias("raidmule", "mulet", "raidmulet")]
       [Summary("Creates a new remote raid coordination message using a boss role.")]
-      [Remarks("Valid Tier values:\n" +
-         "0 (raid with no boss assigned)\n" +
-         "1, common, C\n" +
-         "2, uncommon, U\n" +
-         "3, rare, R\n" +
-         "4, premium, p\n" +
-         "5, legendary, L\n" +
-         "7, mega, M\n" +
-         "Requires a channel registered for raid notifications.")]
       [RegisterChannel('R')]
-      public async Task RaidMuleT([Summary("Boss role of the raid.")] IRole boss,
-                                  [Summary("Time the raid will start.")] string time,
-                                  [Summary("Where the raid will be.")][Remainder] string location)
+      public async Task Mule([Summary("Boss role of the raid.")] IRole boss,
+                             [Summary("Time the raid will start.")] string time,
+                             [Summary("Where the raid will be.")][Remainder] string location)
       {
          Dictionary<int, List<string>> allBosses = Connections.Instance().GetFullBossList();
          string bossName = Connections.GetPokemonFromPicture(boss.Name);
@@ -507,22 +490,13 @@ namespace PokeStar.Modules
       /// <param name="time">Time the raid will start.</param>
       /// <param name="location">Where the raid will be.</param>
       /// <returns>Completed Task.</returns>
-      [Command("traint")]
-      [Alias("raidTraint")]
+      [Command("train")]
+      [Alias("raidTrain", "traint", "raidTraint")]
       [Summary("Creates a new raid train coordination message using a boss role.")]
-      [Remarks("Valid Tier values:\n" +
-         "0 (raid with no boss assigned)\n" +
-         "1, common, C\n" +
-         "2, uncommon, U\n" +
-         "3, rare, R\n" +
-         "4, premium, p\n" +
-         "5, legendary, L\n" +
-         "7, mega, M\n" +
-         "Requires a channel registered for raid notifications.")]
       [RegisterChannel('R')]
-      public async Task RaidTrainT([Summary("Boss role of the raid.")] IRole boss,
-                                   [Summary("Time the raid will start.")] string time,
-                                   [Summary("Where the raid will be.")][Remainder] string location)
+      public async Task Train([Summary("Boss role of the raid.")] IRole boss,
+                              [Summary("Time the raid will start.")] string time,
+                              [Summary("Where the raid will be.")][Remainder] string location)
       {
          Dictionary<int, List<string>> allBosses = Connections.Instance().GetFullBossList();
          string bossName = Connections.GetPokemonFromPicture(boss.Name);
@@ -586,19 +560,10 @@ namespace PokeStar.Modules
       /// <param name="location">Where the raid will be.</param>
       /// <returns>Completed Task.</returns>
       [Command("muletrain")]
-      [Alias("raidMuleTrain")]
+      [Alias("raidMuleTrain", "muletraint", "raidMuleTraint")]
       [Summary("Creates a new raid train coordination message.")]
-      [Remarks("Valid Tier values:\n" +
-         "0 (raid with no boss assigned)\n" +
-         "1, common, C\n" +
-         "2, uncommon, U\n" +
-         "3, rare, R\n" +
-         "4, premium, p\n" +
-         "5, legendary, L\n" +
-         "7, mega, M\n" +
-         "Requires a channel registered for raid notifications.")]
       [RegisterChannel('R')]
-      public async Task RaidMuleTrainT([Summary("Boss role of the raid.")] IRole boss,
+      public async Task MuleTrain([Summary("Boss role of the raid.")] IRole boss,
                                   [Summary("Time the raid will start.")] string time,
                                   [Summary("Where the raid will be.")][Remainder] string location)
       {

@@ -53,7 +53,6 @@ namespace PokeStar.Modules
                "Leave blank to get a list of all commands.")]
       public async Task Help([Summary("(Optional) Get help with this command.")] string command = null)
       {
-
          SocketGuildUser user = Context.Guild.Users.FirstOrDefault(x => x.Id == Context.User.Id);
          bool isAdmin = (user.Roles.Where(role => role.Permissions.Administrator).ToList().Count != 0 || Context.Guild.OwnerId == user.Id);
          bool isNona = Context.Guild.Name.Equals(Global.HOME_SERVER, StringComparison.OrdinalIgnoreCase);
@@ -70,50 +69,57 @@ namespace PokeStar.Modules
                msg.AddReactionsAsync(HELP_EMOJIS);
             }
          }
-         else if (Global.COMMAND_INFO.FirstOrDefault(x => x.Name.Equals(command, StringComparison.OrdinalIgnoreCase) || x.Aliases.Contains(command)) is CommandInfo cmdInfo
-            && CheckShowCommand(cmdInfo.Name, isAdmin, isNona))
+         else
          {
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.WithColor(Global.EMBED_COLOR_HELP_RESPONSE);
-            embed.WithTitle($"**{prefix}{cmdInfo.Name} command help**");
-            embed.WithDescription(cmdInfo.Summary ?? "No description available");
-            if (cmdInfo.Aliases.Count > 1)
+            List<CommandInfo> cmds = Global.COMMAND_INFO.Where(x => x.Name.Equals(command, StringComparison.OrdinalIgnoreCase) || x.Aliases.Contains(command)).ToList();
+            if (cmds.Count != 0)
             {
-               StringBuilder sb = new StringBuilder();
-               foreach (string alias in cmdInfo.Aliases)
+               foreach (CommandInfo cmdInfo in cmds)
                {
-                  if (!alias.Equals(command, StringComparison.OrdinalIgnoreCase))
-                  {
-                     sb.Append($"{alias}, ");
-                  }
-               }
-               embed.AddField("Alternate Command:", sb.ToString().TrimEnd().TrimEnd(','));
-            }
-            if (cmdInfo.Remarks != null)
-            {
-               embed.AddField("**Additional Information:**", cmdInfo.Remarks);
-            }
 
-            if (cmdInfo.Parameters.Count == 0)
-            {
-               embed.WithFooter("*This command does not take any parameters.");
+                  EmbedBuilder embed = new EmbedBuilder();
+                  embed.WithColor(Global.EMBED_COLOR_HELP_RESPONSE);
+                  embed.WithTitle($"**{prefix}{cmdInfo.Name} command help**");
+                  embed.WithDescription(cmdInfo.Summary ?? "No description available");
+                  if (cmdInfo.Aliases.Count > 1)
+                  {
+                     StringBuilder sb = new StringBuilder();
+                     foreach (string alias in cmdInfo.Aliases)
+                     {
+                        if (!alias.Equals(command, StringComparison.OrdinalIgnoreCase))
+                        {
+                           sb.Append($"{alias}, ");
+                        }
+                     }
+                     embed.AddField("Alternate Command:", sb.ToString().TrimEnd().TrimEnd(','));
+                  }
+                  if (cmdInfo.Remarks != null)
+                  {
+                     embed.AddField("**Additional Information:**", cmdInfo.Remarks);
+                  }
+
+                  if (cmdInfo.Parameters.Count == 0)
+                  {
+                     embed.WithFooter("*This command does not take any parameters.");
+                  }
+                  else
+                  {
+                     StringBuilder sb = new StringBuilder();
+                     foreach (ParameterInfo param in cmdInfo.Parameters)
+                     {
+                        embed.AddField($"**<{param.Name}>**", param.Summary ?? "No description available");
+                        sb.Append($" {param.Name}");
+                     }
+                     embed.AddField($"**Example:**", $"{prefix}{cmdInfo.Name}{sb}");
+                  }
+
+                  await ReplyAsync(embed: embed.Build());
+               }
             }
             else
             {
-               StringBuilder sb = new StringBuilder();
-               foreach (ParameterInfo param in cmdInfo.Parameters)
-               {
-                  embed.AddField($"**<{param.Name}>**", param.Summary ?? "No description available");
-                  sb.Append($" {param.Name}");
-               }
-               embed.AddField($"**Example:**", $"{prefix}{cmdInfo.Name}{sb}");
+               await ResponseMessage.SendErrorMessage(Context.Channel, "help", $"Command \'{command}\' does not exist. Run the '.help' command to get a list of valid commands.");
             }
-
-            await ReplyAsync(embed: embed.Build());
-         }
-         else
-         {
-            await ResponseMessage.SendErrorMessage(Context.Channel, "help", $"Command \'{command}\' does not exist. Run the '.help' command to get a list of valid commands.");
          }
       }
 
