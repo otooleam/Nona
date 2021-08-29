@@ -268,7 +268,7 @@ namespace PokeStar.ConnectionInterface
          bool registerFound = false;
          string queryString = $@"SELECT COUNT(*) AS count 
                                  FROM ChannelRegistration
-                                 WHERE NotifyMessageID={message};";
+                                 WHERE NotifyMessages LIKE '%{message}%';";
 
          using (SqlConnection conn = GetConnection())
          {
@@ -312,6 +312,39 @@ namespace PokeStar.ConnectionInterface
       }
 
       /// <summary>
+      /// Get notification messages for a channel.
+      /// </summary>
+      /// <param name="guild">Id of the guild.</param>
+      /// <param name="channel">Id of the channel.</param>
+      /// <returns>Channel message string.</returns>
+      public string GetNotificationMessages(ulong guild, ulong channel)
+      {
+         string NotifyMessages = null;
+         string queryString = $@"SELECT NotifyMessages 
+                                 FROM ChannelRegistration 
+                                 WHERE GuildID={guild}
+                                 AND ChannelID={channel};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            using (SqlDataReader reader = new SqlCommand(queryString, conn).ExecuteReader())
+            {
+               while (reader.Read())
+               {
+                  if (reader["NotifyMessages"].GetType() != typeof(DBNull))
+                  {
+                     NotifyMessages = Convert.ToString(reader["NotifyMessages"]);
+                  }
+               }
+            }
+            conn.Close();
+
+         }
+         return NotifyMessages;
+      }
+
+      /// <summary>
       /// Adds a new registration to a channel.
       /// </summary>
       /// <param name="guild">Id of the guild.</param>
@@ -319,7 +352,7 @@ namespace PokeStar.ConnectionInterface
       /// <param name="registration">New registration value.</param>
       public void AddRegistration(ulong guild, ulong channel, string registration)
       {
-         string queryString = $@"INSERT INTO ChannelRegistration (GuildID, ChannelID, Register, NotifyMessageID)
+         string queryString = $@"INSERT INTO ChannelRegistration (GuildID, ChannelID, Register, NotifyMessages)
                                  VALUES ({guild}, {channel}, '{registration}', NULL)";
 
          using (SqlConnection conn = GetConnection())
@@ -356,14 +389,13 @@ namespace PokeStar.ConnectionInterface
       /// </summary>
       /// <param name="guild">Id of the guild.</param>
       /// <param name="channel">Id of the channel.</param>
-      /// <param name="message">Id of the message</param>
-      public void UpdateNotificationMessage(ulong guild, ulong channel, ulong? message = null)
+      /// <param name="messages">Id of the messages as comma separated string.</param>
+      public void UpdateNotificationMessage(ulong guild, ulong channel, string messages = null)
       {
 
-         string messageID = message.HasValue ? $"{message.Value}" : "NULL";
-
+         string messageID = $@"'{messages}'" ?? "NULL";
          string queryString = $@"UPDATE ChannelRegistration 
-                                 SET NotifyMessageID={messageID}
+                                 SET NotifyMessages={messageID}
                                  WHERE GuildID={guild}
                                  AND ChannelID={channel};";
 

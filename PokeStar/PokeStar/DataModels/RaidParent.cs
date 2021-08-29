@@ -99,6 +99,11 @@ namespace PokeStar.DataModels
       public Dictionary<int, List<string>> AllBosses { get; set; }
 
       /// <summary>
+      /// Current page for selecting a boss.
+      /// </summary>
+      public int BossPage { get; set; }
+
+      /// <summary>
       /// Creates a new RaidParent.
       /// </summary>
       /// <param name="groupLimit">Max number of groups.</param>
@@ -357,12 +362,10 @@ namespace PokeStar.DataModels
       /// </summary>
       /// <param name="time">Time of the raid.</param>
       /// <param name="location">Location of the raid.</param>
-      public void AddRaid(string time, string location)
+      /// <param name="boss">Boss of the raid.</param>
+      public void AddRaid(string time, string location, string boss = null)
       {
-         if (!Locations.Any(raidTrainLoc => raidTrainLoc.Location.Equals(location, StringComparison.OrdinalIgnoreCase)))
-         {
-            Locations.Add(new RaidTrainLoc(time, location, Locations.Last().BossName));
-         }
+         Locations.Add(new RaidTrainLoc(time, location, boss ?? Locations.Last().BossName));
       }
 
       /// <summary>

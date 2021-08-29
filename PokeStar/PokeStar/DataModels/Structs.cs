@@ -37,7 +37,7 @@ namespace PokeStar.DataModels
    public struct RaidTrainLoc
    {
       /// <summary>
-      /// Time the raid starts
+      /// Time the raid starts.
       /// </summary>
       public string Time { get; }
       /// <summary>
@@ -48,7 +48,7 @@ namespace PokeStar.DataModels
       /// <summary>
       /// Boss that is at the location.
       /// </summary>
-      public string BossName { get; set; }
+      public string BossName { get; }
 
       /// <summary>
       /// Creates a new RaidTrainLoc.
@@ -285,6 +285,51 @@ namespace PokeStar.DataModels
       {
          Type = type;
          MainMessageId = mainMessageId;
+      }
+   }
+
+   /// <summary>
+   /// Location in a raid train.
+   /// </summary>
+   public struct RaidGuideSelect
+   {
+      /// <summary>
+      /// Current selection page.
+      /// </summary>
+      public int Page { get; }
+      /// <summary>
+      /// List of bosses.
+      /// </summary>
+      public List<string> Bosses { get; }
+
+      /// <summary>
+      /// Tier of bosses.
+      /// </summary>
+      public short Tier { get; }
+
+      /// <summary>
+      /// Creates a new initial RaidTrainLoc.
+      /// </summary>
+      /// <param name="tier">Tier of bosses.</param>
+      /// <param name="bosses">List of bosses.</param>
+      public RaidGuideSelect(short tier, List<string> bosses)
+      {
+         Page = 0;
+         Tier = tier;
+         Bosses = bosses;
+      }
+
+      /// <summary>
+      /// Creates a new RaidTrainLoc.
+      /// </summary>
+      /// <param name="page">Current selection page.</param>
+      /// <param name="tier">Tier of bosses.</param>
+      /// <param name="bosses">List of bosses.</param>
+      public RaidGuideSelect(int page, short tier, List<string> bosses)
+      {
+         Page = page;
+         Tier = tier;
+         Bosses = bosses;
       }
    }
 
