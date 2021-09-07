@@ -77,6 +77,7 @@ namespace PokeStar.ConnectionInterface
       /// <returns>Pokémon picture file name.</returns>
       public static string GetPokemonPicture(string pokemonName)
       {
+         pokemonName = pokemonName.Replace("’", "");
          pokemonName = pokemonName.Replace("`", "");
          pokemonName = pokemonName.Replace(" ", "_");
          pokemonName = pokemonName.Replace("-", "_");
