@@ -145,7 +145,8 @@ namespace PokeStar
       /// <returns>Task Complete.</returns>
       private async Task<Task> HandleCommandAsync(SocketMessage cmdMessage)
       {
-         if (!(cmdMessage is SocketUserMessage message) ||
+         if (!Global.INIT_COMPLETE ||
+            !(cmdMessage is SocketUserMessage message) ||
              (message.Author.IsBot &&
              (!Global.USE_NONA_TEST || !message.Author.Username.Equals("NonaTest", StringComparison.OrdinalIgnoreCase)))
              || cmdMessage.Channel is IPrivateChannel)

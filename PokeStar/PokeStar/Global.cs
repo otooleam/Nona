@@ -92,6 +92,8 @@ namespace PokeStar
       /// </summary>
       public static bool USE_EMPTY_RAID { get; set; }
 
+      public static bool INIT_COMPLETE { get; set; } = false;
+
       // Help command hidding *************************************************
 
       /// <summary>

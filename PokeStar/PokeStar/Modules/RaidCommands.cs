@@ -768,19 +768,26 @@ namespace PokeStar.Modules
       {
          Dictionary<string, string> table = Connections.GetRaidDifficultyTable();
 
-         EmbedBuilder embed = new EmbedBuilder();
-         embed.WithColor(Global.EMBED_COLOR_GAME_INFO_RESPONSE);
-         embed.WithTitle("Raid Boss Difficulty Scale:");
-
-         for (int i = 0; i < table.Count - 1; i++)
+         if (table == null)
          {
-            KeyValuePair<string, string> difficulty = table.ElementAt(i);
-            embed.AddField(difficulty.Key, difficulty.Value);
+            ResponseMessage.SendErrorMessage(Context.Channel, "difficulty", "Unable to read difficulty table.");
          }
+         else
+         {
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithColor(Global.EMBED_COLOR_GAME_INFO_RESPONSE);
+            embed.WithTitle("Raid Boss Difficulty Scale:");
 
-         embed.WithFooter(table.ElementAt(table.Count - 1).Value);
+            for (int i = 0; i < table.Count - 1; i++)
+            {
+               KeyValuePair<string, string> difficulty = table.ElementAt(i);
+               embed.AddField(difficulty.Key, difficulty.Value);
+            }
 
-         await Context.Channel.SendMessageAsync(embed: embed.Build());
+            embed.WithFooter(table.ElementAt(table.Count - 1).Value);
+
+            await Context.Channel.SendMessageAsync(embed: embed.Build());
+         }
       }
    }
 }
