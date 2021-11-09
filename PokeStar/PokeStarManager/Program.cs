@@ -31,7 +31,7 @@ namespace PokeStarManager
 
 
          string program_path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-         JObject env_file = JObject.Parse(File.ReadAllText($"{program_path}\\env.json"));
+         JObject env_file = JObject.Parse(File.ReadAllText($"{program_path}\\manager_env.json"));
 
          string pokestar_location = env_file.GetValue("pokestar_location").ToString();
          string version = env_file.GetValue("version").ToString();
