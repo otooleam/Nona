@@ -66,6 +66,8 @@ namespace PokeStar
          int logLevel = Convert.ToInt32(Global.ENV_FILE.GetValue("log_level").ToString());
          Global.LOG_LEVEL = !Enum.IsDefined(typeof(LogSeverity), logLevel) ? DefaultLogLevel : (LogSeverity)logLevel;
 
+         Console.Title = Global.HOME_SERVER;
+
          DiscordSocketConfig clientConfig = new DiscordSocketConfig
          {
             MessageCacheSize = SizeMessageCashe,

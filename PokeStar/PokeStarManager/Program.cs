@@ -18,6 +18,9 @@ namespace PokeStarManager
       [DllImport("kernel32.dll", SetLastError = true)]
       private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
 
+      [DllImport("user32.dll")]
+      static extern int SetWindowText(IntPtr hWnd, string text);
+
 
       static void Main(string[] args)
       {
@@ -29,12 +32,15 @@ namespace PokeStarManager
          handler = new ConsoleEventDelegate(ConsoleEventCallback);
          SetConsoleCtrlHandler(handler, true);
 
-
          string program_path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
          JObject env_file = JObject.Parse(File.ReadAllText($"{program_path}\\manager_env.json"));
 
          string pokestar_location = env_file.GetValue("pokestar_location").ToString();
          string version = env_file.GetValue("version").ToString();
+         string server = env_file.GetValue("home_server").ToString();
+
+
+         Console.Title = $"{server} Manager";
 
          Console.WriteLine($"{DateTime.Now:MM/dd/yyyy hh:mm tt} \t Starting Pokestar Manager {version}.");
          /**/
@@ -55,7 +61,9 @@ namespace PokeStarManager
                      FileName = "Pokestar.exe",
                      WorkingDirectory = pokestar_location
                   };
-                  Process.Start(p_info);
+                  Process p = Process.Start(p_info);
+                  Thread.Sleep(100);  // <-- ugly hack
+                  SetWindowText(p.MainWindowHandle, server);
 
                   Thread.Sleep(60000 * 5);
                   errorStartCounter++;
