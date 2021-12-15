@@ -893,6 +893,16 @@ namespace PokeStar.ConnectionInterface
       }
 
       /// <summary>
+      /// Gets Mega Pokémon that boost a give type.
+      /// </summary>
+      /// <param name="type">Type that is boosted.</param>
+      /// <returns>List of all Mega Pokémon with the type.</returns>
+      public List<string> GetMegaType(string type)
+      {
+         return POGODBConnector.GetMegaByType(type);
+      }
+
+      /// <summary>
       /// Gets all weather that boosts the given types.
       /// </summary>
       /// <param name="types">List of types.</param>
@@ -953,6 +963,26 @@ namespace PokeStar.ConnectionInterface
          {
             POGODBConnector.AddCounter(name, ReformatName(counter.Name), ReformatName(counter.FastAttack.Name), ReformatName(counter.ChargeAttack.Name), counter.Rating, true);
          }
+      }
+
+      /// <summary>
+      /// Get Region info for a given region.
+      /// Leave reationName null to get all region info.
+      /// </summary>
+      /// <param name="regionName">Name of the region to get info for.</param>
+      /// <returns>Info based on the region name.</returns>
+      public Region GetRegionInfo(string regionName = null)
+      {
+         Region region = new Region
+         {
+            Total = POGODBConnector.GetTotalPokemon(regionName),
+            Released = POGODBConnector.GetTotalReleasedPokemon(regionName),
+            Shiny = POGODBConnector.GetTotalShinyPokemon(regionName),
+            Shadow = POGODBConnector.GetTotalShadowPokemon(regionName),
+            Form = POGODBConnector.GetTotalFormPokemon(regionName),
+         };
+
+         return region;
       }
 
       /// <summary>

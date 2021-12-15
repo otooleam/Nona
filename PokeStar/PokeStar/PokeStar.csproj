@@ -199,6 +199,7 @@
     <Compile Include="DataModels\POI.cs" />
     <Compile Include="DataModels\LeagueIV.cs" />
     <Compile Include="DataModels\Move.cs" />
+    <Compile Include="DataModels\Region.cs" />
     <Compile Include="DataModels\ResponseMessage.cs" />
     <Compile Include="DataModels\Pokemon.cs" />
     <Compile Include="DataModels\RaidGroup.cs" />
@@ -226,6 +227,7 @@
     <Compile Include="Modules\NicknameCommands.cs" />
     <Compile Include="Modules\RaidCommands.cs" />
     <Compile Include="Modules\RaidReplyCommands.cs" />
+    <Compile Include="Modules\RegionCommands.cs" />
     <Compile Include="Modules\RocketCommands.cs" />
     <Compile Include="Modules\RoleCommands.cs" />
     <Compile Include="Modules\SetupCommands.cs" />
