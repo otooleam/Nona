@@ -631,20 +631,18 @@ namespace PokeStar.ConnectionInterface
       /// <param name="value">New value of the attribute.</param>
       public void SetPokemonAttribute(string pokemonName, string attribute, int value)
       {
-         if (value != TRUE && value != FALSE)
+         if (value == TRUE || value == FALSE)
          {
-            return;
-         }
-
-         string queryString = $@"UPDATE Pokemon 
+            string queryString = $@"UPDATE Pokemon 
                                  SET {attribute}={value}
                                  WHERE Name='{pokemonName}';";
 
-         using (SqlConnection conn = GetConnection())
-         {
-            conn.Open();
-            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
-            conn.Close();
+            using (SqlConnection conn = GetConnection())
+            {
+               conn.Open();
+               _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+               conn.Close();
+            }
          }
       }
 
