@@ -24,7 +24,7 @@ namespace PokeStar.Modules
       /// </summary>
       /// <param name="attribute">Portion of the raid message to edit.</param>
       /// <param name="value">New value of the edited attribute.</param>
-      /// <returns></returns>
+      /// <returns>Completed Task.</returns>
       [Command("edit")]
       [Summary("Edit the time, location (loc), or tier/boss of a raid.")]
       [Remarks("Must be a reply to any type of raid message.")]
@@ -71,13 +71,26 @@ namespace PokeStar.Modules
                      parent.BossEditingPlayer = author;
                   }
                   parent.SelectionTier = calcTier;
-                  int selectType = parent.AllBosses[calcTier].Count > Global.SELECTION_EMOJIS.Length ? (int)SELECTION_TYPES.PAGE_EDIT : (int)SELECTION_TYPES.STANDARD_EDIT;
+                  int selectType = parent.AllBosses[calcTier].Count > Global.NUM_SELECTIONS ? (int)SELECTION_TYPES.PAGE_EDIT : (int)SELECTION_TYPES.STANDARD_EDIT;
+                  IEmote[] emotes = new List<IEmote>(Global.SELECTION_EMOJIS.Take(parent.AllBosses[calcTier].Count))
+                     .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR]).Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW])
+                     .Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CHANGE_TIER]).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray();
+#if BUTTONS
+                  RestUserMessage bossMsg = await Context.Channel.SendMessageAsync(text: $"{author.Mention}",
+                     embed: BuildBossSelectEmbed(parent.AllBosses[calcTier], selectType, parent.BossPage, null),
+                     components: Global.BuildButtons(emotes, Global.BuildSelectionCustomIDs(Global.SELECTION_EMOJIS.Take(parent.AllBosses[calcTier].Count).Count())
+                        .Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR]).Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.BACK_ARROW])
+                        .Append(extraComponents[(int)EXTRA_EMOJI_INDEX.CHANGE_TIER]).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray()));
+#else
                   RestUserMessage bossMsg = await Context.Channel.SendMessageAsync(text: $"{author.Mention}",
                      embed: BuildBossSelectEmbed(parent.AllBosses[calcTier], selectType, parent.BossPage, null));
+#endif
                   subMessages.Add(bossMsg.Id, new RaidSubMessage((int)SUB_MESSAGE_TYPES.EDIT_BOSS_SUB_MESSAGE, raidMessage.Id));
-                  bossMsg.AddReactionsAsync(new List<IEmote>(Global.SELECTION_EMOJIS.Take(parent.AllBosses[calcTier].Count)).ToArray()
-                     .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR]).Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW])
-                     .Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CHANGE_TIER]).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray());
+
+
+#if !BUTTONS
+                  bossMsg.AddReactionsAsync(emotes);
+#endif
                }
             }
             else
@@ -290,7 +303,7 @@ namespace PokeStar.Modules
                "Must be a reply to a raid train message.")]
       [RegisterChannel('R')]
       [RaidReply()]
-      public async Task Add([Summary("Boss role of the raid.")] IRole boss,
+      public async Task AddT([Summary("Boss role of the raid.")] IRole boss,
                             [Summary("Time of the raid.")] string time,
                             [Summary("Location of the raid.")][Remainder] string location)
       {
@@ -479,21 +492,28 @@ namespace PokeStar.Modules
             Context.Channel.DeleteMessageAsync(raidMessageId);
             raidMessages.Remove(raidMessageId);
 
-            string fileName = RAID_TRAIN_IMAGE_NAME;
-            Connections.CopyFile(fileName);
             if (parent is Raid raid)
             {
-               RestUserMessage raidMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildRaidTrainEmbed(raid, fileName));
-               raidMessages.Add(raidMessage.Id, raid);
-               SetEmojis(raidMessage, raidEmojis.Concat(trainEmojis).ToArray());
+#if BUTTONS
+               SendRaidMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidTrainEmbed, Context.Channel, Global.BuildButtons(
+                  raidEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
+                  raidComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
+#else
+               SendRaidMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidTrainEmbed, Context.Channel,
+                  raidEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray());
+#endif
             }
             else if (parent is RaidMule mule)
             {
-               RestUserMessage raidMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildRaidMuleTrainEmbed(mule, fileName));
-               raidMessages.Add(raidMessage.Id, mule);
-               SetEmojis(raidMessage, muleEmojis.Concat(trainEmojis).ToArray());
+#if BUTTONS
+               SendRaidMuleMessage(mule, RAID_TRAIN_IMAGE_NAME, BuildRaidMuleTrainEmbed, Context.Channel, Global.BuildButtons(
+                  muleEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
+                  muleComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
+#else
+               SendRaidMuleMessage(mule, RAID_TRAIN_IMAGE_NAME, BuildRaidMuleTrainEmbed, Context.Channel,
+                  muleEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray());
+#endif
             }
-            Connections.DeleteFile(fileName);
          }
          await Context.Message.DeleteAsync();
       }
@@ -628,11 +648,17 @@ namespace PokeStar.Modules
 
          parent.BossPage = 0;
          await message.RemoveAllReactionsAsync();
+         IEmote[] emotes = new List<IEmote>(tierEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray();
          await ((SocketUserMessage)message).ModifyAsync(x =>
          {
             x.Embed = BuildTierSelectEmbed();
+#if BUTTONS
+            x.Components = Global.BuildButtons(emotes, new List<string>(tierComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray());
+#endif
          });
-         ((SocketUserMessage)message).AddReactionsAsync(tierEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray());
+#if !BUTTONS
+         ((SocketUserMessage)message).AddReactionsAsync(emotes);
+#endif
 
          await Context.Message.DeleteAsync();
       }

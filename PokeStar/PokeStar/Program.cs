@@ -108,6 +108,9 @@ namespace PokeStar
          await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
          client.ReactionAdded += HandleReactionAdded;
          client.ReactionRemoved += HandleReactionRemoved;
+#if BUTTONS
+         client.ButtonExecuted += HandleButtonPress;
+#endif
          client.Ready += HandleReady;
          client.JoinedGuild += HandleJoinGuild;
          client.LeftGuild += HandleLeftGuild;
@@ -153,6 +156,7 @@ namespace PokeStar
          {
             return Task.CompletedTask;
          }
+
          SocketCommandContext context = new SocketCommandContext(client, message);
 
          int argPos = 0;
@@ -203,12 +207,14 @@ namespace PokeStar
          SocketGuildChannel chnl = channel as SocketGuildChannel;
          ulong guild = chnl.Guild.Id;
 
-         IUser user = reaction.User.Value;
-
-
-         if (message != null && reaction.User.IsSpecified && !user.IsBot)
+         if (message != null && reaction.User.IsSpecified && !reaction.User.Value.IsBot)
          {
-            if (RaidCommandParent.IsRaidMessage(message.Id))
+            if (Connections.IsNotifyMessage(message.Id))
+            {
+               await Connections.NotifyMessageReactionAddedHandle(reaction, chnl.Guild);
+            }
+#if !BUTTONS
+            else if (RaidCommandParent.IsRaidMessage(message.Id))
             {
                await RaidCommandParent.RaidMessageReactionHandle(message, reaction);
             }
@@ -240,10 +246,7 @@ namespace PokeStar
             {
                await HelpCommands.HelpMessageReactionHandle(message, reaction, guild);
             }
-            else if (Connections.IsNotifyMessage(message.Id))
-            {
-               await Connections.NotifyMessageReactionAddedHandle(reaction, chnl.Guild);
-            }
+#endif
          }
          return Task.CompletedTask;
       }
@@ -261,12 +264,8 @@ namespace PokeStar
          IMessage message = await reaction.Channel.GetMessageAsync(cachedMessage.Id);
 
          SocketGuildChannel chnl = message.Channel as SocketGuildChannel;
-         ulong guild = chnl.Guild.Id;
 
-         IUser user = reaction.User.Value;
-
-
-         if (message != null && reaction.User.IsSpecified && !user.IsBot)
+         if (message != null && reaction.User.IsSpecified && !reaction.User.Value.IsBot)
          {
             if (Connections.IsNotifyMessage(message.Id))
             {
@@ -275,6 +274,69 @@ namespace PokeStar
          }
          return Task.CompletedTask;
       }
+
+#if BUTTONS
+      /// <summary>
+      /// Handles the Button Pressed event.
+      /// </summary>
+      /// <param name="component">Component pressed on the message.</param>
+      /// <returns>Task Complete.</returns>
+      private async Task<Task> HandleButtonPress(SocketMessageComponent component)
+      {
+         if (component.Channel == null || component.Message == null)
+         {
+            return Task.CompletedTask;
+         }
+
+         SocketGuildChannel chnl = component.Channel as SocketGuildChannel;
+         ulong guild = chnl.Guild.Id;
+
+         if (component.Message != null && component.User != null && !component.User.IsBot)
+         {
+            SocketUserMessage message = component.Message;
+
+            if (RaidCommandParent.IsRaidMessage(message.Id))
+            {
+               await RaidCommandParent.RaidMessageButtonHandle(message, component);
+            }
+            else if (RaidCommandParent.IsRaidSubMessage(message.Id))
+            {
+               await RaidCommandParent.RaidSubMessageButtonHandle(message, component);
+            }
+            else if (RaidCommandParent.IsRaidGuideMessage(message.Id))
+            {
+               await RaidCommandParent.RaidGuideMessageButtonHandle(message, component);
+            }
+            else if (DexCommandParent.IsDexSelectMessage(message.Id))
+            {
+               await DexCommandParent.DexSelectMessageButtonHandle(message, component, guild);
+            }
+            else if (DexCommandParent.IsDexMessage(message.Id))
+            {
+               await DexCommandParent.DexMessageButtonHandle(message, component, guild);
+            }
+            else if (DexCommandParent.IsCatchMessage(message.Id))
+            {
+               await DexCommandParent.CatchMessageButtonHandle(message, component);
+            }
+            else if (POICommands.IsPOISubMessage(message.Id))
+            {
+               await POICommands.POIMessageButtonHandle(message, component, guild);
+            }
+            else if (HelpCommands.IsHelpMessage(message.Id))
+            {
+               await HelpCommands.HelpMessageButtonHandle(message, component, guild);
+            }
+            else if (Connections.IsNotifyMessage(message.Id))
+            {
+               // await Connections.NotifyMessageReactionAddedHandle(reaction, chnl.Guild);
+            }
+            await component.DeferAsync();
+         }
+
+         return Task.CompletedTask;
+      }
+#endif
 
       /// <summary>
       /// Handles the Ready event.

@@ -34,6 +34,16 @@ namespace PokeStar.Modules
          new Emoji("➡️")
       };
 
+#if BUTTONS
+      /// <summary>
+      /// Components for a help message.
+      /// </summary>
+      private static readonly string[] HELP_COMPONENTS = {
+         "help_back",
+         "help_forward",
+      };
+#endif
+
       /// <summary>
       /// Index of emotes on a help message.
       /// </summary>
@@ -62,13 +72,16 @@ namespace PokeStar.Modules
          if (command == null)
          {
             List<CommandInfo> validCommands = Global.COMMAND_INFO.Where(cmdInfo => CheckShowCommand(cmdInfo.Name, isAdmin, isNona)).ToList();
-
+#if BUTTONS
+            IUserMessage msg = await ReplyAsync(embed: BuildGeneralHelpEmbed(validCommands.Take(MAX_COMMANDS).ToList(), prefix, 1), 
+                                                components: Global.BuildButtons(HELP_EMOJIS, HELP_COMPONENTS));
+#else
             IUserMessage msg = await ReplyAsync(embed: BuildGeneralHelpEmbed(validCommands.Take(MAX_COMMANDS).ToList(), prefix, 1));
-            if (validCommands.Count > MAX_COMMANDS)
-            {
-               helpMessages.Add(msg.Id, new HelpMessage(validCommands));
-               msg.AddReactionsAsync(HELP_EMOJIS);
-            }
+#endif
+            helpMessages.Add(msg.Id, new HelpMessage(validCommands));
+#if !BUTTONS
+            msg.AddReactionsAsync(HELP_EMOJIS);
+#endif
          }
          else if (Global.COMMAND_INFO.FirstOrDefault(x => x.Name.Equals(command, StringComparison.OrdinalIgnoreCase) || x.Aliases.Contains(command)) is CommandInfo cmdInfo
             && CheckShowCommand(cmdInfo.Name, isAdmin, isNona))
@@ -149,6 +162,40 @@ namespace PokeStar.Modules
          return helpMessages.ContainsKey(id);
       }
 
+#if BUTTONS
+      /// <summary>
+      /// Handles a button press on a help message.
+      /// </summary>
+      /// <param name="message">Message that the component is on.</param>
+      /// <param name="component">Component that was pressed.</param>
+      /// <param name="guildId">Id of the guild that the message was sent in.</param>
+      /// <returns>Completed Task.</returns>
+      public static async Task HelpMessageButtonHandle(IMessage message, SocketMessageComponent component, ulong guildId)
+      {
+         HelpMessage helpMessage = helpMessages[message.Id];
+         int offset = helpMessage.Page;
+         string prefix = Connections.Instance().GetPrefix(guildId);
+
+         if (component.Data.CustomId.Equals(HELP_COMPONENTS[(int)HELP_EMOJI_INDEX.BACK_ARROW]) && offset > 0)
+         {
+            offset--;
+         }
+         else if (component.Data.CustomId.Equals(HELP_COMPONENTS[(int)HELP_EMOJI_INDEX.FORWARD_ARROR]) && helpMessage.Commands.Count > (offset + 1) * MAX_COMMANDS)
+         {
+            offset++;
+         }
+
+         if (helpMessage.Page != offset)
+         {
+            await ((SocketUserMessage)message).ModifyAsync(x =>
+            {
+               x.Embed = BuildGeneralHelpEmbed(helpMessage.Commands.Skip(offset * MAX_COMMANDS).Take(MAX_COMMANDS).ToList(), prefix, offset + 1);
+            });
+         }
+
+         helpMessages[message.Id] = new HelpMessage(helpMessage.Commands, offset);
+      }
+#else
       /// <summary>
       /// Handles a reaction on a help message.
       /// </summary>
@@ -182,6 +229,7 @@ namespace PokeStar.Modules
          helpMessages[message.Id] = new HelpMessage(helpMessage.Commands, offset);
          await message.RemoveReactionAsync(reaction.Emote, (SocketGuildUser)reaction.User);
       }
+#endif
 
       /// <summary>
       /// Builds a general help embed.

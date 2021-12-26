@@ -52,7 +52,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                Connections.Instance().GetPokemonStats(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel);
             }
          }
          else
@@ -71,14 +71,14 @@ namespace PokeStar.Modules
                {
                   Connections.Instance().GetPokemonStats(ref pkmn);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel);
                }
             }
             else
             {
                Connections.Instance().GetPokemonStats(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel);
             }
          }
       }
@@ -113,7 +113,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                Connections.GetPokemonCP(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel);
             }
          }
          else
@@ -132,14 +132,14 @@ namespace PokeStar.Modules
                {
                   Connections.GetPokemonCP(ref pkmn);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel);
                }
             }
             else
             {
                Connections.GetPokemonCP(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel);
             }
          }
       }
@@ -175,7 +175,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                pkmn.Evolutions = GenerateEvoDict(pkmn.Name);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel);
             }
          }
          else
@@ -194,14 +194,14 @@ namespace PokeStar.Modules
                {
                   pkmn.Evolutions = GenerateEvoDict(pkmn.Name);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel);
                }
             }
             else
             {
                pkmn.Evolutions = GenerateEvoDict(pkmn.Name);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel);
             }
          }
       }
@@ -237,7 +237,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                Connections.Instance().GetPokemonCounter(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel);
             }
          }
          else
@@ -256,14 +256,14 @@ namespace PokeStar.Modules
                {
                   Connections.Instance().GetPokemonCounter(ref pkmn);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel);
                }
             }
             else
             {
                Connections.Instance().GetPokemonCounter(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel);
             }
          }
       }
@@ -299,7 +299,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                Connections.Instance().GetPokemonPvP(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel);
             }
          }
          else
@@ -318,14 +318,14 @@ namespace PokeStar.Modules
                {
                   Connections.Instance().GetPokemonPvP(ref pkmn);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel);
                }
             }
             else
             {
                Connections.Instance().GetPokemonPvP(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel);
             }
          }
       }
@@ -388,7 +388,7 @@ namespace PokeStar.Modules
                      pkmn.Forms = Connections.Instance().GetFormTags(baseName);
                   }
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel);
                }
             }
             else
@@ -417,7 +417,7 @@ namespace PokeStar.Modules
                         pkmn.Forms = Connections.Instance().GetFormTags(baseName);
                      }
                      pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
-                     await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel, true);
+                     await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel);
                   }
                }
                else
@@ -434,7 +434,7 @@ namespace PokeStar.Modules
                      pkmn.Forms = Connections.Instance().GetFormTags(baseName);
                   }
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel);
                }
             }
          }

@@ -1065,5 +1065,55 @@ namespace PokeStar
       /// All custom number emotes.
       /// </summary>
       public static readonly List<Emote> NUM_EMOJIS = new List<Emote>();
+
+#if BUTTONS
+      // Buttons **************************************************************
+
+      public static readonly string SELECTION_BUTTON_PREFIX = "selection_";
+
+      /// <summary>
+      /// Builds a component builder with buttons.
+      /// Giving null customIDs will auto generate selection custom ids.
+      /// </summary>
+      /// <param name="emotes">List of button emotes.</param>
+      /// <param name="customIDs">List of component ids.</param>
+      /// <returns>ComponentBuilder with buttons, otherwise null.</returns>
+      public static MessageComponent BuildButtons(IEmote[] emotes, string[] customIDs = null)
+      {
+         string[] IDs = customIDs ?? BuildSelectionCustomIDs(emotes.Length);
+
+         if (emotes.Length != IDs.Length)
+         {
+            return null;
+         }
+
+         ComponentBuilder component = new ComponentBuilder();
+         for (int i = 0; i < emotes.Length; i++)
+         {
+            component.WithButton(customId: IDs[i], emote: emotes[i]);
+         }
+         return component.Build();
+      }
+
+      /// <summary>
+      /// Builds custom ID array for selection components.
+      /// Value passed will be constrained between 1 and NUM_SELECTIONS.
+      /// </summary>
+      /// <param name="numSelections">Number of selections between 1 and NUM_SELECTIONS.</param>
+      /// <returns>Custom ID array for selections</returns>
+      public static string[] BuildSelectionCustomIDs(int numSelections)
+      {
+         int selectionIndex = Math.Max(1, Math.Min(numSelections, NUM_SELECTIONS));
+
+         string[] customIDs = new string[selectionIndex];
+
+         for (int i = 0; i < selectionIndex; i++)
+         {
+            customIDs[i] = $"{SELECTION_BUTTON_PREFIX}{i + 1}";
+         }
+
+         return customIDs;
+      }
+#endif
    }
 }

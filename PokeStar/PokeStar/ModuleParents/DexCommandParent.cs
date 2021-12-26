@@ -8,7 +8,6 @@ using Discord.Rest;
 using Discord.Commands;
 using Discord.WebSocket;
 using PokeStar.DataModels;
-using PokeStar.Calculators;
 using PokeStar.ConnectionInterface;
 
 namespace PokeStar.ModuleParents
@@ -64,17 +63,46 @@ namespace PokeStar.ModuleParents
       /// <summary>
       /// Emotes for a catch message.
       /// </summary>
-      protected static readonly Emoji[] catchEmojis = {
+      protected static readonly IEmote[] catchEmojis = {
          new Emoji("⬅️"),
          new Emoji("⏺️"),
          new Emoji("➡️"),
          new Emoji("❓"),
       };
 
+#if BUTTONS
+      // Components ***********************************************************
+
       /// <summary>
-      /// Descriptions for dex emotes.
+      /// Components for a dex message.
       /// </summary>
-      private static readonly string[] dexEmojisDesc = {
+      private static readonly string[] dexComponents = {
+         "dex_main",
+         "dex_cp",
+         "dex_evolution",
+         "dex_counter",
+         "dex_pvp",
+         "dex_form",
+         "dex_nickname",
+         "dex_help",
+      };
+
+      /// <summary>
+      /// Components for a catch message.
+      /// </summary>
+      protected static readonly string[] catchComponents = {
+         "catch_decrement",
+         "catch_modify",
+         "catch_increment",
+         "catch_help",
+      };
+#endif
+      // Descriptions *********************************************************
+
+      /// <summary>
+      /// Descriptions for dex interactions.
+      /// </summary>
+      private static readonly string[] dexInteractionDesc = {
          "means switch to the Main dex page.",
          "means switch to the CP page.",
          "means switch to the Evolution page.",
@@ -85,9 +113,9 @@ namespace PokeStar.ModuleParents
       };
 
       /// <summary>
-      /// Descriptions for catch emotes.
+      /// Descriptions for catch interactions.
       /// </summary>
-      private static readonly string[] catchEmojisDesc = {
+      private static readonly string[] catchInteractionDesc = {
          "means decrement current modifier value.",
          "means cycle through modifiers to edit.",
          "means increment current modifier value."
@@ -108,49 +136,14 @@ namespace PokeStar.ModuleParents
       /// </summary>
       protected enum DEX_MESSAGE_TYPES
       {
-         /// <summary>
-         /// Dex message type.
-         /// </summary>
          DEX_MESSAGE,
-
-         /// <summary>
-         /// CP message type.
-         /// </summary>
          CP_MESSAGE,
-
-         /// <summary>
-         /// Evo message type.
-         /// </summary>
          EVO_MESSAGE,
-
-         /// <summary>
-         /// Counter message type.
-         /// </summary>
          COUNTER_MESSAGE,
-
-         /// <summary>
-         /// PvP message type.
-         /// </summary>
          PVP_MESSAGE,
-
-         /// <summary>
-         /// Form message type.
-         /// </summary>
          FORM_MESSAGE,
-
-         /// <summary>
-         /// Nickname message type.
-         /// </summary>
          NICKNAME_MESSAGE,
-
-         /// <summary>
-         /// Catch message type.
-         /// </summary>
          CATCH_MESSAGE,
-
-         /// <summary>
-         /// Move message type.
-         /// </summary>
          MOVE_MESSAGE,
       }
 
@@ -212,6 +205,285 @@ namespace PokeStar.ModuleParents
          return catchMessages.ContainsKey(id);
       }
 
+#if BUTTONS
+      // Message component handlers ********************************************
+
+      /// <summary>
+      /// Handles a button press on a dex select message.
+      /// </summary>
+      /// <param name="message">Message that the component is on.</param>
+      /// <param name="component">Component that was pressed.</param>
+      /// <param name="guildId">Id of the guild that the message was sent in.</param>
+      /// <returns>Completed Task.</returns>
+      public static async Task DexSelectMessageButtonHandle(IMessage message, SocketMessageComponent component, ulong guildId)
+      {
+         DexSelectionMessage dexMessage = dexSelectMessages[message.Id];
+         for (int i = 0; i < dexMessage.Selections.Count; i++)
+         {
+            if (component.Data.CustomId.Equals($"{Global.SELECTION_BUTTON_PREFIX}{i + 1}"))
+            {
+               await message.DeleteAsync();
+               if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.DEX_MESSAGE)
+               {
+                  Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
+                  Connections.Instance().GetPokemonStats(ref pokemon);
+                  pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
+                  await SendDexMessage(pokemon, BuildDexEmbed, component.Channel);
+               }
+               else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.CP_MESSAGE)
+               {
+                  Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
+                  Connections.GetPokemonCP(ref pokemon);
+                  pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
+                  await SendDexMessage(pokemon, BuildCPEmbed, component.Channel);
+               }
+               else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE)
+               {
+                  Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
+                  Connections.Instance().GetPokemonCounter(ref pokemon);
+                  pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
+                  await SendDexMessage(pokemon, BuildCounterEmbed, component.Channel);
+               }
+               else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.EVO_MESSAGE)
+               {
+                  Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
+                  pokemon.Evolutions = GenerateEvoDict(pokemon.Name);
+                  pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
+                  await SendDexMessage(pokemon, BuildEvoEmbed, component.Channel);
+               }
+               else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.PVP_MESSAGE)
+               {
+                  Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
+                  Connections.Instance().GetPokemonPvP(ref pokemon);
+                  pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
+                  await SendDexMessage(pokemon, BuildPvPEmbed, component.Channel);
+               }
+               else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.FORM_MESSAGE)
+               {
+                  Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
+                  List<string> pokemonWithNumber = Connections.Instance().GetPokemonByNumber(pokemon.Number);
+
+                  if (pokemonWithNumber.Count == 1)
+                  {
+                     pokemon.Forms = new Form();
+                  }
+                  else if (pokemonWithNumber.Count > 1)
+                  {
+                     string baseName = Connections.Instance().GetBaseForms().Intersect(pokemonWithNumber).First();
+                     pokemon.Forms = Connections.Instance().GetFormTags(baseName);
+                  }
+                  pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
+                  await SendDexMessage(pokemon, BuildFormEmbed, component.Channel);
+               }
+               else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.NICKNAME_MESSAGE)
+               {
+                  Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
+                  pokemon.Nicknames = Connections.Instance().GetNicknames(guildId, pokemon.Name);
+                  await SendDexMessage(pokemon, BuildNicknameEmbed, component.Channel);
+               }
+               else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.MOVE_MESSAGE)
+               {
+                  Move pkmnMove = Connections.Instance().GetMove(dexMessage.Selections[i]);
+                  string fileName = GENERIC_IMAGE;
+                  Connections.CopyFile(fileName);
+                  await component.Channel.SendFileAsync(fileName, embed: BuildMoveEmbed(pkmnMove, fileName));
+                  Connections.DeleteFile(fileName);
+               }
+               else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.CATCH_MESSAGE)
+               {
+                  Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
+                  CatchSimulation catchSim = new CatchSimulation(pokemon);
+                  string fileName = Connections.GetPokemonPicture(pokemon.Name);
+                  Connections.CopyFile(fileName);
+                  RestUserMessage catchMessage = await component.Channel.SendFileAsync(fileName, 
+                     embed: BuildCatchEmbed(catchSim, fileName), components: Global.BuildButtons(catchEmojis, catchComponents));
+                  catchMessages.Add(catchMessage.Id, catchSim);
+                  Connections.DeleteFile(fileName);
+               }
+               dexSelectMessages.Remove(message.Id);
+            }
+         }
+      }
+
+      /// <summary>
+      /// Handles a button press on a dex message.
+      /// </summary>
+      /// <param name="message">Message that the component is on.</param>
+      /// <param name="component">Component that was pressed.</param>
+      /// <param name="guildId">Id of the guild that the message was sent in.</param>
+      /// <returns>Completed Task.</returns>
+      public static async Task DexMessageButtonHandle(IMessage message, SocketMessageComponent component, ulong guildId)
+      {
+         Pokemon pokemon = dexMessages[message.Id];
+         SocketUserMessage msg = (SocketUserMessage)message;
+         string fileName = Connections.GetPokemonPicture(pokemon.Name);
+         Connections.CopyFile(fileName);
+         if (component.Data.CustomId.Equals(dexComponents[(int)DEX_EMOJI_INDEX.HELP]))
+         {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("**Dex Message Button Help:**");
+
+            for (int i = 0; i < dexEmojis.Length - 1; i++)
+            {
+               sb.AppendLine($"{dexEmojis[i]} {dexInteractionDesc[i]}");
+            }
+            await component.User.SendMessageAsync(sb.ToString());
+         }
+         else if (component.Data.CustomId.Equals(dexComponents[(int)DEX_EMOJI_INDEX.DEX_MESSAGE]))
+         {
+            if (!pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE])
+            {
+               Connections.Instance().GetPokemonStats(ref pokemon);
+               pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
+            }
+            await msg.ModifyAsync(x =>
+            {
+               x.Embed = BuildDexEmbed(pokemon, fileName);
+            });
+         }
+         else if (component.Data.CustomId.Equals(dexComponents[(int)DEX_EMOJI_INDEX.CP_MESSAGE]))
+         {
+            if (!pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE])
+            {
+               Connections.GetPokemonCP(ref pokemon);
+               pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
+            }
+            await msg.ModifyAsync(x =>
+            {
+               x.Embed = BuildCPEmbed(pokemon, fileName);
+            });
+         }
+
+         else if (component.Data.CustomId.Equals(dexComponents[(int)DEX_EMOJI_INDEX.EVO_MESSAGE]))
+         {
+            if (!pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE])
+            {
+               pokemon.Evolutions = GenerateEvoDict(pokemon.Name);
+               pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
+            }
+            await msg.ModifyAsync(x =>
+            {
+               x.Embed = BuildEvoEmbed(pokemon, fileName);
+            });
+         }
+         else if (component.Data.CustomId.Equals(dexComponents[(int)DEX_EMOJI_INDEX.COUNTER_MESSAGE]))
+         {
+            if (!pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE])
+            {
+               Connections.Instance().GetPokemonCounter(ref pokemon);
+               pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
+            }
+            await msg.ModifyAsync(x =>
+            {
+               x.Embed = BuildCounterEmbed(pokemon, fileName);
+            });
+         }
+         else if (component.Data.CustomId.Equals(dexComponents[(int)DEX_EMOJI_INDEX.PVP_MESSAGE]))
+         {
+            if (!pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE])
+            {
+               Connections.Instance().GetPokemonPvP(ref pokemon);
+               pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
+            }
+            await msg.ModifyAsync(x =>
+            {
+               x.Embed = BuildPvPEmbed(pokemon, fileName);
+            });
+         }
+         else if (component.Data.CustomId.Equals(dexComponents[(int)DEX_EMOJI_INDEX.FORM_MESSAGE]))
+         {
+            if (!pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE])
+            {
+               List<string> pokemonWithNumber = Connections.Instance().GetPokemonByNumber(pokemon.Number);
+
+               if (pokemonWithNumber.Count == 1)
+               {
+                  pokemon.Forms = new Form();
+               }
+               else if (pokemonWithNumber.Count > 1)
+               {
+                  string baseName = Connections.Instance().GetBaseForms().Intersect(pokemonWithNumber).First();
+                  pokemon.Forms = Connections.Instance().GetFormTags(baseName);
+               }
+               pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
+            }
+            await msg.ModifyAsync(x =>
+            {
+               x.Embed = BuildFormEmbed(pokemon, fileName);
+            });
+         }
+         else if (component.Data.CustomId.Equals(dexComponents[(int)DEX_EMOJI_INDEX.NICKNAME_MESSAGE]))
+         {
+            pokemon.Nicknames = Connections.Instance().GetNicknames(guildId, pokemon.Name);
+            await msg.ModifyAsync(x =>
+            {
+               x.Embed = BuildNicknameEmbed(pokemon, fileName);
+            });
+         }
+         Connections.DeleteFile(fileName);
+      }
+
+      /// <summary>
+      /// Handles a button press on a catch message.
+      /// </summary>
+      /// <param name="message">Message that the component is on.</param>
+      /// <param name="component">Component that was pressed.</param>
+      /// <returns>Completed Task.</returns>
+      public static async Task CatchMessageButtonHandle(IMessage message, SocketMessageComponent component)
+      {
+         CatchSimulation catchSim = catchMessages[message.Id];
+         bool needsUpdate = true;
+         if (component.Data.CustomId.Equals(catchComponents[(int)CATCH_EMOJI_INDEX.DECREMENT]))
+         {
+            catchSim.DecrementModifierValue();
+         }
+         else if (component.Data.CustomId.Equals(catchComponents[(int)CATCH_EMOJI_INDEX.MODIFIER]))
+         {
+            catchSim.UpdateModifier();
+         }
+         else if (component.Data.CustomId.Equals(catchComponents[(int)CATCH_EMOJI_INDEX.INCREMENT]))
+         {
+            catchSim.IncrementModifierValue();
+         }
+         else if (component.Data.CustomId.Equals(catchComponents[(int)CATCH_EMOJI_INDEX.HELP]))
+         {
+            string prefix = Connections.Instance().GetPrefix(((SocketGuildChannel)message.Channel).Guild.Id);
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("**Catch Button Help:**");
+            for (int i = 0; i < catchInteractionDesc.Length; i++)
+            {
+               sb.AppendLine($"{catchEmojis[i]} {catchInteractionDesc[i]}");
+            }
+
+            sb.AppendLine("\n**Catch Reply Help:**");
+            foreach (string reply in catchReplies)
+            {
+               sb.AppendLine($"{prefix}{reply}");
+            }
+
+            await ((SocketGuildUser)component.User).SendMessageAsync(sb.ToString());
+            needsUpdate = false;
+         }
+         else
+         {
+            needsUpdate = false;
+         }
+
+         if (needsUpdate)
+         {
+            SocketUserMessage msg = (SocketUserMessage)message;
+            string fileName = Connections.GetPokemonPicture(catchSim.Pokemon.Name);
+            Connections.CopyFile(fileName);
+            await msg.ModifyAsync(x =>
+            {
+               x.Embed = BuildCatchEmbed(catchSim, fileName);
+            });
+            Connections.DeleteFile(fileName);
+         }
+      }
+#else
       // Message reaction handlers ********************************************
 
       /// <summary>
@@ -234,35 +506,35 @@ namespace PokeStar.ModuleParents
                   Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
                   Connections.Instance().GetPokemonStats(ref pokemon);
                   pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
-                  await SendDexMessage(pokemon, BuildDexEmbed, reaction.Channel, true);
+                  await SendDexMessage(pokemon, BuildDexEmbed, reaction.Channel);
                }
                else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.CP_MESSAGE)
                {
                   Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
                   Connections.GetPokemonCP(ref pokemon);
                   pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
-                  await SendDexMessage(pokemon, BuildCPEmbed, reaction.Channel, true);
+                  await SendDexMessage(pokemon, BuildCPEmbed, reaction.Channel);
                }
                else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE)
                {
                   Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
                   Connections.Instance().GetPokemonCounter(ref pokemon);
                   pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
-                  await SendDexMessage(pokemon, BuildCounterEmbed, reaction.Channel, true);
+                  await SendDexMessage(pokemon, BuildCounterEmbed, reaction.Channel);
                }
                else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.EVO_MESSAGE)
                {
                   Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
                   pokemon.Evolutions = GenerateEvoDict(pokemon.Name);
                   pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
-                  await SendDexMessage(pokemon, BuildEvoEmbed, reaction.Channel, true);
+                  await SendDexMessage(pokemon, BuildEvoEmbed, reaction.Channel);
                }
                else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.PVP_MESSAGE)
                {
                   Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
                   Connections.Instance().GetPokemonPvP(ref pokemon);
                   pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
-                  await SendDexMessage(pokemon, BuildPvPEmbed, reaction.Channel, true);
+                  await SendDexMessage(pokemon, BuildPvPEmbed, reaction.Channel);
                }
                else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.FORM_MESSAGE)
                {
@@ -279,13 +551,13 @@ namespace PokeStar.ModuleParents
                      pokemon.Forms = Connections.Instance().GetFormTags(baseName);
                   }
                   pokemon.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
-                  await SendDexMessage(pokemon, BuildFormEmbed, reaction.Channel, true);
+                  await SendDexMessage(pokemon, BuildFormEmbed, reaction.Channel);
                }
                else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.NICKNAME_MESSAGE)
                {
                   Pokemon pokemon = Connections.Instance().GetPokemon(dexMessage.Selections[i]);
                   pokemon.Nicknames = Connections.Instance().GetNicknames(guildId, pokemon.Name);
-                  await SendDexMessage(pokemon, BuildNicknameEmbed, reaction.Channel, true);
+                  await SendDexMessage(pokemon, BuildNicknameEmbed, reaction.Channel);
                }
                else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.MOVE_MESSAGE)
                {
@@ -304,12 +576,12 @@ namespace PokeStar.ModuleParents
                   RestUserMessage catchMessage = await reaction.Channel.SendFileAsync(fileName, embed: BuildCatchEmbed(catchSim, fileName));
                   catchMessages.Add(catchMessage.Id, catchSim);
                   Connections.DeleteFile(fileName);
-                  catchMessage.AddReactionsAsync(catchEmojis);
+                  await catchMessage.AddReactionsAsync(catchEmojis);
                }
                dexSelectMessages.Remove(message.Id);
-               return;
             }
          }
+
          await message.RemoveReactionAsync(reaction.Emote, (SocketGuildUser)reaction.User);
       }
 
@@ -333,7 +605,7 @@ namespace PokeStar.ModuleParents
 
             for (int i = 0; i < dexEmojis.Length - 1; i++)
             {
-               sb.AppendLine($"{dexEmojis[i]} {dexEmojisDesc[i]}");
+               sb.AppendLine($"{dexEmojis[i]} {dexInteractionDesc[i]}");
             }
             await reaction.User.Value.SendMessageAsync(sb.ToString());
          }
@@ -428,6 +700,7 @@ namespace PokeStar.ModuleParents
                x.Embed = BuildNicknameEmbed(pokemon, fileName);
             });
          }
+
          Connections.DeleteFile(fileName);
          await message.RemoveReactionAsync(reaction.Emote, (SocketGuildUser)reaction.User);
       }
@@ -461,9 +734,9 @@ namespace PokeStar.ModuleParents
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine("**Catch Emoji Help:**");
-            for (int i = 0; i < catchEmojisDesc.Length; i++)
+            for (int i = 0; i < catchInteractionDesc.Length; i++)
             {
-               sb.AppendLine($"{catchEmojis[i]} {catchEmojisDesc[i]}");
+               sb.AppendLine($"{catchEmojis[i]} {catchInteractionDesc[i]}");
             }
 
             sb.AppendLine("\n**Catch Reply Help:**");
@@ -494,7 +767,7 @@ namespace PokeStar.ModuleParents
 
          await message.RemoveReactionAsync(reaction.Emote, (SocketGuildUser)reaction.User);
       }
-
+#endif
       // Embed builders *******************************************************
 
       /// <summary>
@@ -1501,10 +1774,17 @@ namespace PokeStar.ModuleParents
       {
          string fileName = POKEDEX_SELECTION_IMAGE;
          Connections.CopyFile(fileName);
+#if BUTTONS
+         RestUserMessage dexMessage = await channel.SendFileAsync(fileName, 
+            embed: BuildDexSelectEmbed(options, fileName), components: Global.BuildButtons(Global.SELECTION_EMOJIS.Take(options.Count).ToArray()));
+#else
          RestUserMessage dexMessage = await channel.SendFileAsync(fileName, embed: BuildDexSelectEmbed(options, fileName));
+#endif
          dexSelectMessages.Add(dexMessage.Id, new DexSelectionMessage(messageType, options));
          Connections.DeleteFile(fileName);
-         dexMessage.AddReactionsAsync(Global.SELECTION_EMOJIS.Take(options.Count).ToArray());
+#if !BUTTONS
+         await dexMessage.AddReactionsAsync(Global.SELECTION_EMOJIS.Take(options.Count).ToArray());
+#endif
       }
 
       /// <summary>
@@ -1513,19 +1793,22 @@ namespace PokeStar.ModuleParents
       /// <param name="pokemon">Pokémon to display.</param>
       /// <param name="EmbedMethod">Embed method to use.</param>
       /// <param name="channel">Channel to send message to.</param>
-      /// <param name="addEmojis">Should emotes be added. Defaults to false.</param>
       /// <returns>Completed Task.</returns>
-      protected static async Task SendDexMessage(Pokemon pokemon, Func<Pokemon, string, Embed> EmbedMethod, ISocketMessageChannel channel, bool addEmojis = false)
+      protected static async Task SendDexMessage(Pokemon pokemon, Func<Pokemon, string, Embed> EmbedMethod, ISocketMessageChannel channel)
       {
          string fileName = Connections.GetPokemonPicture(pokemon.Name);
          Connections.CopyFile(fileName);
+#if BUTTONS
+         RestUserMessage message = await channel.SendFileAsync(fileName, 
+            embed: EmbedMethod(pokemon, fileName), components: Global.BuildButtons(dexEmojis, dexComponents));
+#else
          RestUserMessage message = await channel.SendFileAsync(fileName, embed: EmbedMethod(pokemon, fileName));
+#endif
          dexMessages.Add(message.Id, pokemon);
          Connections.DeleteFile(fileName);
-         if (addEmojis)
-         {
-            message.AddReactionsAsync(dexEmojis);
-         }
+#if !BUTTONS
+         await message.AddReactionsAsync(dexEmojis);
+#endif
       }
 
       // Miscellaneous ********************************************************

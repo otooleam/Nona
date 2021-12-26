@@ -126,7 +126,7 @@ namespace PokeStar.Modules
             {
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                pkmn.Nicknames = Connections.Instance().GetNicknames(guild, pkmn.Name);
-               await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel);
             }
          }
          else
@@ -144,13 +144,13 @@ namespace PokeStar.Modules
                else
                {
                   pkmn.Nicknames = Connections.Instance().GetNicknames(guild, pkmn.Name);
-                  await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel);
                }
             }
             else
             {
                pkmn.Nicknames = Connections.Instance().GetNicknames(guild, pkmn.Name);
-               await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel);
             }
          }
       }
