@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
-using Discord.WebSocket;
 
 namespace PokeStar.DataModels
 {
@@ -17,7 +16,7 @@ namespace PokeStar.DataModels
       /// <param name="location">Where the raid is.</param>
       /// <param name="conductor">Conductor of the raid train.</param>
       /// <param name="boss">Name of the raid boss.</param>
-      public Raid(short tier, string time, string location, SocketGuildUser conductor, string boss = null) : 
+      public Raid(short tier, string time, string location, Player conductor, string boss = null) : 
          base(Global.LIMIT_RAID_GROUP, Global.LIMIT_RAID_PLAYER, Global.LIMIT_RAID_INVITE, tier, time, location, conductor, boss) { }
 
       /// <summary>
@@ -39,7 +38,7 @@ namespace PokeStar.DataModels
       /// <param name="partySize">Number of accounts the player is bringing.</param>
       /// <param name="invitedBy">Who invited the player.</param>
       /// <returns>True if the player was added, otherwise false.</returns>
-      public override bool AddPlayer(SocketGuildUser player, int partySize, SocketGuildUser invitedBy = null)
+      public override bool AddPlayer(Player player, int partySize, Player invitedBy = null)
       {
          int group;
          if (invitedBy == null) // Add in person
@@ -121,9 +120,9 @@ namespace PokeStar.DataModels
       /// </summary>
       /// <param name="player">Player to remove.</param>
       /// <returns>RaidRemove with raid group and list of invited users.</returns>
-      public override RaidRemoveResult RemovePlayer(SocketGuildUser player)
+      public override RaidRemoveResult RemovePlayer(Player player)
       {
-         RaidRemoveResult returnValue = new RaidRemoveResult(Global.NOT_IN_RAID, new List<SocketGuildUser>());
+         RaidRemoveResult returnValue = new RaidRemoveResult(Global.NOT_IN_RAID, new List<Player>());
 
          int group = IsInRaid(player);
          if (group == InviteListNumber)
@@ -135,8 +134,8 @@ namespace PokeStar.DataModels
             if (group != Global.NOT_IN_RAID)
             {
                RaidGroup foundGroup = Groups.ElementAt(group);
-               List<SocketGuildUser> tempList = foundGroup.RemovePlayer(player);
-               foreach (SocketGuildUser invite in tempList)
+               List<Player> tempList = foundGroup.RemovePlayer(player);
+               foreach (Player invite in tempList)
                {
                   returnValue.Users.Add(invite);
                   Invite.Add(invite);
@@ -150,7 +149,7 @@ namespace PokeStar.DataModels
       /// Requests an invite to a raid for a player.
       /// </summary>
       /// <param name="player">Player that requested the invite.</param>
-      public override void RequestInvite(SocketGuildUser player)
+      public override void RequestInvite(Player player)
       {
          if (IsInRaid(player) == Global.NOT_IN_RAID)
          {
@@ -164,7 +163,7 @@ namespace PokeStar.DataModels
       /// <param name="requester">Player that requested the invite.</param>
       /// <param name="accepter">Player that accepted the invite.</param>
       /// <returns>True if the requester was invited, otherwise false.</returns>
-      public override bool InvitePlayer(SocketGuildUser requester, SocketGuildUser accepter)
+      public override bool InvitePlayer(Player requester, Player accepter)
       {
          if ((IsInRaid(requester) == InviteListNumber && IsInRaid(accepter, false) != Global.NOT_IN_RAID))
          {
@@ -180,7 +179,7 @@ namespace PokeStar.DataModels
       /// <param name="player">Player to check.</param>
       /// <param name="checkInvite">If invited players should be checked.</param>
       /// <returns>Group number the player is in, else NotInRaid.</returns>
-      public override int IsInRaid(SocketGuildUser player, bool checkInvite = true)
+      public override int IsInRaid(Player player, bool checkInvite = true)
       {
          if (checkInvite && Invite.Contains(player))
          {
@@ -202,19 +201,19 @@ namespace PokeStar.DataModels
       /// </summary>
       /// <param name="player">Player to remove.</param>
       /// <returns>Return a dictionary of all users invited by the player.</returns>
-      public Dictionary<SocketGuildUser, List<SocketGuildUser>> ClearEmptyPlayer(SocketGuildUser player)
+      public Dictionary<Player, List<Player>> ClearEmptyPlayer(Player player)
       {
          int group = IsInRaid(player, false);
          if (group != Global.NOT_IN_RAID)
          {
-            Dictionary<SocketGuildUser, List<SocketGuildUser>> empty = Groups.ElementAt(group).ClearEmptyPlayers();
-            foreach (KeyValuePair<SocketGuildUser, List<SocketGuildUser>> user in empty)
+            Dictionary<Player, List<Player>> empty = Groups.ElementAt(group).ClearEmptyPlayers();
+            foreach (KeyValuePair<Player, List<Player>> user in empty)
             {
                Invite.AddRange(user.Value);
             }
             return empty;
          }
-         return new Dictionary<SocketGuildUser, List<SocketGuildUser>>();
+         return new Dictionary<Player, List<Player>>();
       }
 
       /// <summary>
@@ -222,7 +221,7 @@ namespace PokeStar.DataModels
       /// </summary>
       /// <param name="player">Player to mark ready.</param>
       /// <returns>Group number the player is in, else NotInRaid.</returns>
-      public int MarkPlayerReady(SocketGuildUser player)
+      public int MarkPlayerReady(Player player)
       {
          int groupNum = IsInRaid(player, false);
          if (groupNum != Global.NOT_IN_RAID && groupNum != InviteListNumber)

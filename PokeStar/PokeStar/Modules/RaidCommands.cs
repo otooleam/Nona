@@ -220,7 +220,7 @@ namespace PokeStar.Modules
 
          if (potentials.Count > 1)
          {
-            Raid raid = new Raid(calcTier, time, location, (SocketGuildUser)Context.User)
+            Raid raid = new Raid(calcTier, time, location, new Player((SocketGuildUser)Context.User))
             {
                AllBosses = allBosses
             };
@@ -258,7 +258,7 @@ namespace PokeStar.Modules
          }
          else if (potentials.Count == 1 || Global.USE_EMPTY_RAID)
          {
-            Raid raid = new Raid(calcTier, time, location, (SocketGuildUser)Context.User,
+            Raid raid = new Raid(calcTier, time, location, new Player((SocketGuildUser)Context.User),
                                  potentials.Count != 1 ? Global.DEFAULT_RAID_BOSS_NAME : potentials.First())
             {
                AllBosses = allBosses
@@ -308,7 +308,7 @@ namespace PokeStar.Modules
 
          if (potentials.Count > 1)
          {
-            RaidMule raid = new RaidMule(calcTier, time, location, (SocketGuildUser)Context.User)
+            RaidMule raid = new RaidMule(calcTier, time, location, new Player((SocketGuildUser)Context.User))
             {
                AllBosses = allBosses
             };
@@ -346,7 +346,7 @@ namespace PokeStar.Modules
          }
          else if (potentials.Count == 1 || Global.USE_EMPTY_RAID)
          {
-            RaidMule raid = new RaidMule(calcTier, time, location, (SocketGuildUser)Context.User,
+            RaidMule raid = new RaidMule(calcTier, time, location, new Player((SocketGuildUser)Context.User),
                                          potentials.Count != 1 ? Global.DEFAULT_RAID_BOSS_NAME : potentials.First())
             {
                AllBosses = allBosses
@@ -532,7 +532,7 @@ namespace PokeStar.Modules
 
          if (calcTier != 0 || Global.USE_EMPTY_RAID)
          {
-            Raid raid = new Raid(calcTier, time, location, (SocketGuildUser)Context.User,
+            Raid raid = new Raid(calcTier, time, location, new Player((SocketGuildUser)Context.User),
                                  calcTier == 0 ? Global.DEFAULT_RAID_BOSS_NAME : bossName)
             {
                AllBosses = allBosses
@@ -596,7 +596,7 @@ namespace PokeStar.Modules
          if (calcTier != 0 || Global.USE_EMPTY_RAID)
          {
             bossName = calcTier == 0 ? Global.DEFAULT_RAID_BOSS_NAME : bossName;
-            RaidMule raid = new RaidMule(calcTier, time, location, (SocketGuildUser)Context.User, 
+            RaidMule raid = new RaidMule(calcTier, time, location, new Player((SocketGuildUser)Context.User), 
                                          calcTier == 0 ? Global.DEFAULT_RAID_BOSS_NAME : bossName)
             {
                AllBosses = allBosses

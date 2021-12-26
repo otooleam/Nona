@@ -17,14 +17,14 @@ namespace PokeStar.DataModels
       /// <summary>
       /// Users that were invited by the removed user.
       /// </summary>
-      public List<SocketGuildUser> Users { get; }
+      public List<Player> Users { get; }
 
       /// <summary>
       /// Creates a new RaidRemoveResult.
       /// </summary>
       /// <param name="group">Group the user was removed from.</param>
       /// <param name="users">Users that were invited by the removed user.</param>
-      public RaidRemoveResult(int group, List<SocketGuildUser> users)
+      public RaidRemoveResult(int group, List<Player> users)
       {
          Group = group;
          Users = users;

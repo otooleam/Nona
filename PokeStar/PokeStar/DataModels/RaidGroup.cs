@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Discord.WebSocket;
 
 namespace PokeStar.DataModels
 {
@@ -25,21 +24,21 @@ namespace PokeStar.DataModels
       /// key = player
       /// value = party size
       /// </summary>
-      private Dictionary<SocketGuildUser, int> Attending { get; set; }
+      private Dictionary<Player, int> Attending { get; set; }
 
       /// <summary>
       /// Dictionary of players ready for the raid.
       /// key = player
       /// value = party size
       /// </summary>
-      private Dictionary<SocketGuildUser, int> Ready { get; set; }
+      private Dictionary<Player, int> Ready { get; set; }
 
       /// <summary>
       /// Dictionary of players invited to the raid group.
       /// key = invited player
       /// value = player who invited
       /// </summary>
-      private Dictionary<SocketGuildUser, SocketGuildUser> Invited { get; set; }
+      private Dictionary<Player, Player> Invited { get; set; }
 
       /// <summary>
       /// Creates a new raid group.
@@ -48,9 +47,9 @@ namespace PokeStar.DataModels
       /// <param name="inviteLimit">Max number of invites.</param>
       public RaidGroup(int playerLimit, int inviteLimit)
       {
-         Attending = new Dictionary<SocketGuildUser, int>();
-         Ready = new Dictionary<SocketGuildUser, int>();
-         Invited = new Dictionary<SocketGuildUser, SocketGuildUser>();
+         Attending = new Dictionary<Player, int>();
+         Ready = new Dictionary<Player, int>();
+         Invited = new Dictionary<Player, Player>();
          PlayerLimit = playerLimit;
          InviteLimit = inviteLimit;
       }
@@ -59,7 +58,7 @@ namespace PokeStar.DataModels
       /// Gets all attending players.
       /// </summary>
       /// <returns>Immutable dictionary of attending players.</returns>
-      public ImmutableDictionary<SocketGuildUser, int> GetReadonlyAttending()
+      public ImmutableDictionary<Player, int> GetReadonlyAttending()
       {
          return Attending.ToImmutableDictionary(k => k.Key, v => v.Value);
       }
@@ -68,7 +67,7 @@ namespace PokeStar.DataModels
       /// Gets all ready players.
       /// </summary>
       /// <returns>Immutable dictionary of ready players.</returns>
-      public ImmutableDictionary<SocketGuildUser, int> GetReadonlyHere()
+      public ImmutableDictionary<Player, int> GetReadonlyHere()
       {
          return Ready.ToImmutableDictionary(k => k.Key, v => v.Value);
       }
@@ -77,7 +76,7 @@ namespace PokeStar.DataModels
       /// Gets all invited players.
       /// </summary>
       /// <returns>Immutable dictionary of invited players.</returns>
-      public ImmutableDictionary<SocketGuildUser, SocketGuildUser> GetReadonlyInvitedAll()
+      public ImmutableDictionary<Player, Player> GetReadonlyInvitedAll()
       {
          return Invited.ToImmutableDictionary(k => k.Key, v => v.Value);
       }
@@ -86,7 +85,7 @@ namespace PokeStar.DataModels
       /// Gets all invited players where the inviter is attending.
       /// </summary>
       /// <returns>Immutable dictionary of invited players.</returns>
-      public ImmutableDictionary<SocketGuildUser, SocketGuildUser> GetReadonlyInvitedAttending()
+      public ImmutableDictionary<Player, Player> GetReadonlyInvitedAttending()
       {
          return Invited.Where(invite => Attending.ContainsKey(invite.Value)).ToImmutableDictionary(k => k.Key, v => v.Value);
       }
@@ -95,7 +94,7 @@ namespace PokeStar.DataModels
       /// Gets all invited players where the inviter is ready.
       /// </summary>
       /// <returns>Immutable dictionary of invited players.</returns>
-      public ImmutableDictionary<SocketGuildUser, SocketGuildUser> GetReadonlyInvitedReady()
+      public ImmutableDictionary<Player, Player> GetReadonlyInvitedReady()
       {
          return Invited.Where(invite => Ready.ContainsKey(invite.Value)).ToImmutableDictionary(k => k.Key, v => v.Value);
       }
@@ -192,7 +191,7 @@ namespace PokeStar.DataModels
       /// <param name="player">Player to add.</param>
       /// <param name="attendSize">Number of accounts attending in person.</param>
       /// <param name="remoteSize">Number of accounts attending via remote.</param>
-      public void AddPlayer(SocketGuildUser player, int attendSize, int remoteSize)
+      public void AddPlayer(Player player, int attendSize, int remoteSize)
       {
          if (!Invited.ContainsKey(player))
          {
@@ -236,7 +235,7 @@ namespace PokeStar.DataModels
       /// </summary>
       /// <param name="player">Player to remove.</param>
       /// <returns>List of players invited by the player.</returns>
-      public List<SocketGuildUser> RemovePlayer(SocketGuildUser player)
+      public List<Player> RemovePlayer(Player player)
       {
          if (Attending.ContainsKey(player))
          {
@@ -249,16 +248,16 @@ namespace PokeStar.DataModels
          else if (Invited.ContainsKey(player))
          {
             Invited.Remove(player);
-            return new List<SocketGuildUser>();
+            return new List<Player>();
          }
 
-         List<SocketGuildUser> playerInvited = new List<SocketGuildUser>();
-         foreach (KeyValuePair<SocketGuildUser, SocketGuildUser> invite in Invited.Where(x => x.Value.Equals(player)))
+         List<Player> playerInvited = new List<Player>();
+         foreach (KeyValuePair<Player, Player> invite in Invited.Where(x => x.Value.Equals(player)))
          {
             playerInvited.Add(invite.Key);
          }
 
-         foreach (SocketGuildUser invite in playerInvited)
+         foreach (Player invite in playerInvited)
          {
             Invited.Remove(invite);
          }
@@ -270,21 +269,21 @@ namespace PokeStar.DataModels
       /// Removes all players with a party size of 0.
       /// </summary>
       /// <returns>Dictionary of all users invited by removed players.</returns>
-      public Dictionary<SocketGuildUser, List<SocketGuildUser>> ClearEmptyPlayers()
+      public Dictionary<Player, List<Player>> ClearEmptyPlayers()
       {
-         Dictionary<SocketGuildUser, List<SocketGuildUser>> empty = new Dictionary<SocketGuildUser, List<SocketGuildUser>>();
-         foreach (KeyValuePair<SocketGuildUser, int> user in Attending.Where(user => user.Value == 0))
+         Dictionary<Player, List<Player>> empty = new Dictionary<Player, List<Player>>();
+         foreach (KeyValuePair<Player, int> user in Attending.Where(user => user.Value == 0))
          {
-            empty.Add(user.Key, new List<SocketGuildUser>());
+            empty.Add(user.Key, new List<Player>());
             empty[user.Key].AddRange(Invited.Where(x => x.Value.Equals(user.Key)).Select(invite => invite.Key));
          }
-         foreach (KeyValuePair<SocketGuildUser, int> user in Ready.Where(user => user.Value == 0))
+         foreach (KeyValuePair<Player, int> user in Ready.Where(user => user.Value == 0))
          {
-            empty.Add(user.Key, new List<SocketGuildUser>());
+            empty.Add(user.Key, new List<Player>());
             empty[user.Key].AddRange(Invited.Where(x => x.Value.Equals(user.Key)).Select(invite => invite.Key));
          }
 
-         foreach (SocketGuildUser user in empty.Keys)
+         foreach (Player user in empty.Keys)
          {
             if (Attending.ContainsKey(user))
             {
@@ -295,7 +294,7 @@ namespace PokeStar.DataModels
                Ready.Remove(user);
             }
          }
-         foreach (SocketGuildUser user in empty.SelectMany(group => group.Value))
+         foreach (Player user in empty.SelectMany(group => group.Value))
          {
             Invited.Remove(user);
          }
@@ -307,7 +306,7 @@ namespace PokeStar.DataModels
       /// Marks a player as ready.
       /// </summary>
       /// <param name="player">Player to mark ready.</param>
-      public bool MarkPlayerReady(SocketGuildUser player)
+      public bool MarkPlayerReady(Player player)
       {
          if (Attending.ContainsKey(player))
          {
@@ -323,7 +322,7 @@ namespace PokeStar.DataModels
       /// </summary>
       /// <param name="requester">Player that requested the invite.</param>
       /// <param name="accepter">Player that accepted the invite.</param>
-      public void InvitePlayer(SocketGuildUser requester, SocketGuildUser accepter)
+      public void InvitePlayer(Player requester, Player accepter)
       {
          Invited.Add(requester, accepter);
       }
@@ -341,7 +340,7 @@ namespace PokeStar.DataModels
       /// Gets a list of players to ping.
       /// </summary>
       /// <returns>List of players that are here</returns>
-      public ImmutableList<SocketGuildUser> GetPingList()
+      public ImmutableList<Player> GetPingList()
       {
          return Ready.Keys.ToList().Union(Invited.Keys.ToList()).Distinct().ToImmutableList();
       }
@@ -350,7 +349,7 @@ namespace PokeStar.DataModels
       /// Gets a list of players to notify of an edit.
       /// </summary>
       /// <returns>List of players to notify.</returns>
-      public ImmutableList<SocketGuildUser> GetNotifyList()
+      public ImmutableList<Player> GetNotifyList()
       {
          return Ready.Keys.ToList().Union(Invited.Keys.ToList()).Union(Attending.Keys.ToList()).Distinct().ToImmutableList();
       }
@@ -361,7 +360,7 @@ namespace PokeStar.DataModels
       /// <param name="player">Player to check.</param>
       /// <param name="checkInvite">If invited players should be checked.</param>
       /// <returns>True if the player is in the raid group, otherwise false.</returns>
-      public bool HasPlayer(SocketGuildUser player, bool checkInvite = true)
+      public bool HasPlayer(Player player, bool checkInvite = true)
       {
          return Attending.ContainsKey(player) || Ready.ContainsKey(player) || (checkInvite && Invited.ContainsKey(player));
       }
@@ -382,13 +381,13 @@ namespace PokeStar.DataModels
       public RaidGroup SplitGroup()
       {
          RaidGroup newGroup = new RaidGroup(PlayerLimit, InviteLimit);
-         foreach (KeyValuePair<SocketGuildUser, int> player in Attending)
+         foreach (KeyValuePair<Player, int> player in Attending)
          {
             if ((newGroup.TotalPlayers() + player.Value) <= PlayerLimit / 2)
             {
                newGroup.Attending.Add(player.Key, player.Value);
 
-               foreach (KeyValuePair<SocketGuildUser, SocketGuildUser> invite in Invited)
+               foreach (KeyValuePair<Player, Player> invite in Invited)
                {
                   if (invite.Value.Equals(player.Key))
                   {
@@ -400,12 +399,12 @@ namespace PokeStar.DataModels
 
          if (newGroup.TotalPlayers() < PlayerLimit / 2)
          {
-            foreach (KeyValuePair<SocketGuildUser, int> player in Ready)
+            foreach (KeyValuePair<Player, int> player in Ready)
             {
                if (newGroup.TotalPlayers() < PlayerLimit / 2)
                {
                   newGroup.Ready.Add(player.Key, player.Value);
-                  foreach (KeyValuePair<SocketGuildUser, SocketGuildUser> invite in Invited)
+                  foreach (KeyValuePair<Player, Player> invite in Invited)
                   {
                      if (invite.Value.Equals(player.Key))
                      {
@@ -416,15 +415,15 @@ namespace PokeStar.DataModels
             }
          }
 
-         foreach (SocketGuildUser player in newGroup.Attending.Keys)
+         foreach (Player player in newGroup.Attending.Keys)
          {
             Attending.Remove(player);
          }
-         foreach (SocketGuildUser player in newGroup.Ready.Keys)
+         foreach (Player player in newGroup.Ready.Keys)
          {
             Ready.Remove(player);
          }
-         foreach (SocketGuildUser player in newGroup.Invited.Keys)
+         foreach (Player player in newGroup.Invited.Keys)
          {
             Invited.Remove(player);
          }

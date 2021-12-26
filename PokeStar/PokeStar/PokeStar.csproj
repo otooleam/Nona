@@ -188,6 +188,7 @@
     <Compile Include="DataModels\CatchSimulation.cs" />
     <Compile Include="DataModels\Evolution.cs" />
     <Compile Include="DataModels\EvolutionNode.cs" />
+    <Compile Include="DataModels\Player.cs" />
     <Compile Include="DataModels\POI.cs" />
     <Compile Include="DataModels\LeagueIV.cs" />
     <Compile Include="DataModels\Move.cs" />
