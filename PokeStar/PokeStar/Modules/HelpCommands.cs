@@ -34,7 +34,7 @@ namespace PokeStar.Modules
          new Emoji("➡️")
       };
 
-#if BUTTONS
+#if COMPONENTS
       /// <summary>
       /// Components for a help message.
       /// </summary>
@@ -72,14 +72,14 @@ namespace PokeStar.Modules
          if (command == null)
          {
             List<CommandInfo> validCommands = Global.COMMAND_INFO.Where(cmdInfo => CheckShowCommand(cmdInfo.Name, isAdmin, isNona)).ToList();
-#if BUTTONS
+#if COMPONENTS
             IUserMessage msg = await ReplyAsync(embed: BuildGeneralHelpEmbed(validCommands.Take(MAX_COMMANDS).ToList(), prefix, 1), 
                                                 components: Global.BuildButtons(HELP_EMOJIS, HELP_COMPONENTS));
 #else
             IUserMessage msg = await ReplyAsync(embed: BuildGeneralHelpEmbed(validCommands.Take(MAX_COMMANDS).ToList(), prefix, 1));
 #endif
             helpMessages.Add(msg.Id, new HelpMessage(validCommands));
-#if !BUTTONS
+#if !COMPONENTS
             msg.AddReactionsAsync(HELP_EMOJIS);
 #endif
          }
@@ -162,7 +162,7 @@ namespace PokeStar.Modules
          return helpMessages.ContainsKey(id);
       }
 
-#if BUTTONS
+#if COMPONENTS
       /// <summary>
       /// Handles a button press on a help message.
       /// </summary>

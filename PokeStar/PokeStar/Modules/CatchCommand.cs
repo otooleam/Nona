@@ -32,24 +32,35 @@ namespace PokeStar.Modules
          {
             List<string> pokemonWithNumber = Connections.Instance().GetPokemonByNumber(pokemonNum);
 
-            if (pokemonWithNumber.Count == 0 || pokemonNum == 0)
+            if (pokemonWithNumber.Count == 0 || pokemonNum == Global.DUMMY_POKE_NUM)
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "catch", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
             {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "catch", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
+            {
+#if !COMPONENTS || !DROP_DOWNS
                IEmote[] emotes = Global.SELECTION_EMOJIS.Take(pokemonWithNumber.Count).ToArray();
+#endif
                string fileName = POKEDEX_SELECTION_IMAGE;
                Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
+#if DROP_DOWNS
+               RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildDexSelectEmbed(fileName), 
+                  components: Global.BuildSelectionMenu(pokemonWithNumber.ToArray(), Global.DEFAULT_MENU_PLACEHOLDER));
+#else
                RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, 
                   embed: BuildDexSelectEmbed(pokemonWithNumber, fileName), components: Global.BuildButtons(emotes));
+#endif
 #else
                RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildDexSelectEmbed(pokemonWithNumber, fileName));
 #endif
                dexSelectMessages.Add(dexMessage.Id, new DexSelectionMessage((int)DEX_MESSAGE_TYPES.CATCH_MESSAGE, pokemonWithNumber));
                Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
                await dexMessage.AddReactionsAsync(emotes);
 #endif
             }
@@ -59,7 +70,7 @@ namespace PokeStar.Modules
                CatchSimulation catchSim = new CatchSimulation(pkmn);
                string fileName = Connections.GetPokemonPicture(pkmn.Name);
                Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
                RestUserMessage catchMessage = await Context.Channel.SendFileAsync(fileName, 
                   embed: BuildCatchEmbed(catchSim, fileName), components: Global.BuildButtons(catchEmojis, catchComponents));
 #else
@@ -67,7 +78,7 @@ namespace PokeStar.Modules
 #endif
                catchMessages.Add(catchMessage.Id, catchSim);
                Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
                await catchMessage.AddReactionsAsync(catchEmojis);
 #endif
             }
@@ -86,15 +97,20 @@ namespace PokeStar.Modules
 
                   string fileName = POKEDEX_SELECTION_IMAGE;
                   Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
+#if DROP_DOWNS
+                  RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildDexSelectEmbed(fileName), 
+                     components: Global.BuildSelectionMenu(pokemonNames.ToArray(), Global.DEFAULT_MENU_PLACEHOLDER));
+#else
                   RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, 
                      embed: BuildDexSelectEmbed(pokemonNames, fileName), components: Global.BuildButtons(Global.SELECTION_EMOJIS));
+#endif
 #else
                   RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildDexSelectEmbed(pokemonNames, fileName));
 #endif
                   dexSelectMessages.Add(dexMessage.Id, new DexSelectionMessage((int)DEX_MESSAGE_TYPES.CATCH_MESSAGE, pokemonNames));
                   Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
                   await dexMessage.AddReactionsAsync(Global.SELECTION_EMOJIS);
 #endif
                }
@@ -103,7 +119,7 @@ namespace PokeStar.Modules
                   CatchSimulation catchSim = new CatchSimulation(pkmn);
                   string fileName = Connections.GetPokemonPicture(pkmn.Name);
                   Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
                   RestUserMessage catchMessage = await Context.Channel.SendFileAsync(fileName,
                      embed: BuildCatchEmbed(catchSim, fileName), components: Global.BuildButtons(catchEmojis, catchComponents));
 #else
@@ -111,7 +127,7 @@ namespace PokeStar.Modules
 #endif
                   catchMessages.Add(catchMessage.Id, catchSim);
                   Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
                await catchMessage.AddReactionsAsync(catchEmojis);
 #endif
                }
@@ -121,7 +137,7 @@ namespace PokeStar.Modules
                CatchSimulation catchSim = new CatchSimulation(pkmn);
                string fileName = Connections.GetPokemonPicture(pkmn.Name);
                Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
                RestUserMessage catchMessage = await Context.Channel.SendFileAsync(fileName, 
                   embed: BuildCatchEmbed(catchSim, fileName), components: Global.BuildButtons(catchEmojis, catchComponents));
 #else
@@ -129,7 +145,7 @@ namespace PokeStar.Modules
 #endif
                catchMessages.Add(catchMessage.Id, catchSim);
                Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
                await catchMessage.AddReactionsAsync(catchEmojis);
 #endif
             }

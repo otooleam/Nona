@@ -108,7 +108,10 @@ namespace PokeStar
          await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
          client.ReactionAdded += HandleReactionAdded;
          client.ReactionRemoved += HandleReactionRemoved;
-#if BUTTONS
+#if COMPONENTS
+#if DROP_DOWNS
+         client.SelectMenuExecuted += HandleSelectionMade;
+#endif
          client.ButtonExecuted += HandleButtonPress;
 #endif
          client.Ready += HandleReady;
@@ -213,7 +216,7 @@ namespace PokeStar
             {
                await Connections.NotifyMessageReactionAddedHandle(reaction, chnl.Guild);
             }
-#if !BUTTONS
+#if !COMPONENTS
             else if (RaidCommandParent.IsRaidMessage(message.Id))
             {
                await RaidCommandParent.RaidMessageReactionHandle(message, reaction);
@@ -275,7 +278,35 @@ namespace PokeStar
          return Task.CompletedTask;
       }
 
-#if BUTTONS
+#if COMPONENTS
+#if DROP_DOWNS
+      public async Task<Task> HandleSelectionMade(SocketMessageComponent component)
+      {
+         if (component.Channel == null || component.Message == null)
+         {
+            return Task.CompletedTask;
+         }
+
+         SocketGuildChannel chnl = component.Channel as SocketGuildChannel;
+         ulong guild = chnl.Guild.Id;
+
+         if (component.Message != null && component.User != null && !component.User.IsBot)
+         {
+            SocketUserMessage message = component.Message;
+
+            if (DexCommandParent.IsDexSelectMessage(message.Id))
+            {
+               await DexCommandParent.DexSelectMessageMenuHandle(message, component, guild);
+            }
+            else if (DexCommandParent.IsDexMessage(message.Id))
+            {
+               await DexCommandParent.DexMessageMenuHandle(message, component, guild);
+            }
+            await component.DeferAsync();
+         }
+         return Task.CompletedTask;
+      }
+#endif
       /// <summary>
       /// Handles the Button Pressed event.
       /// </summary>
@@ -307,6 +338,7 @@ namespace PokeStar
             {
                await RaidCommandParent.RaidGuideMessageButtonHandle(message, component);
             }
+#if !DROP_DOWNS
             else if (DexCommandParent.IsDexSelectMessage(message.Id))
             {
                await DexCommandParent.DexSelectMessageButtonHandle(message, component, guild);
@@ -315,6 +347,7 @@ namespace PokeStar
             {
                await DexCommandParent.DexMessageButtonHandle(message, component, guild);
             }
+#endif
             else if (DexCommandParent.IsCatchMessage(message.Id))
             {
                await DexCommandParent.CatchMessageButtonHandle(message, component);
@@ -327,13 +360,8 @@ namespace PokeStar
             {
                await HelpCommands.HelpMessageButtonHandle(message, component, guild);
             }
-            else if (Connections.IsNotifyMessage(message.Id))
-            {
-               // await Connections.NotifyMessageReactionAddedHandle(reaction, chnl.Guild);
-            }
             await component.DeferAsync();
          }
-
          return Task.CompletedTask;
       }
 #endif

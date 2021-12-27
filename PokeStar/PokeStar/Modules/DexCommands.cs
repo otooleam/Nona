@@ -39,11 +39,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "dex", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonNum == Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
             {
-               await ResponseMessage.SendErrorMessage(Context.Channel, "dex", $"Arceus #{pokemonNum} has too many forms to display, please search by name.");
+               await ResponseMessage.SendErrorMessage(Context.Channel, "dex", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER)
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.DEX_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -104,7 +104,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "cp", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "cp", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.CP_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -166,7 +170,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "evo", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "evo", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.EVO_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -228,7 +236,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "counter", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "counter", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -290,7 +302,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "pvp", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "pvp", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.PVP_MESSAGE, pokemonWithNumber, Context.Channel);
             }

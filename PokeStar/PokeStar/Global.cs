@@ -501,14 +501,13 @@ namespace PokeStar
       public static readonly int BAD_EVOLUTION = -1;
 
       /// <summary>
-      /// Unown Pokemon number.
+      /// Max number of dex options to display.
       /// </summary>
-      public static readonly int UNOWN_NUMBER  = 201;
-
-      /// <summary>
-      /// Arceus Pokemon number.
-      /// </summary>
-      public static readonly int ARCEUS_NUMBER = 493;
+#if COMPONENTS && DROP_DOWNS
+      public static readonly int MAX_OPTIONS   = 25;
+#else
+      public static readonly int MAX_OPTIONS   = 10;
+#endif
 
       // Training dummy Pokémon ***********************************************
 
@@ -1066,11 +1065,60 @@ namespace PokeStar
       /// </summary>
       public static readonly List<Emote> NUM_EMOJIS = new List<Emote>();
 
-#if BUTTONS
+#if COMPONENTS
       // Buttons **************************************************************
 
+      /// <summary>
+      /// Selection button custom Id prefix.
+      /// </summary>
       public static readonly string SELECTION_BUTTON_PREFIX = "selection_";
+#if DROP_DOWNS
+      /// <summary>
+      /// Selection menu option custom Id prefix.
+      /// </summary>
+      public static readonly string SELECTION_MENU_PREFIX = "option_";
 
+      /// <summary>
+      /// Default selection menu placeholder.
+      /// </summary>
+      public static readonly string DEFAULT_MENU_PLACEHOLDER = "Select an option";
+
+      /// <summary>
+      /// Selection menu option custom Id split.
+      /// </summary>
+      public static readonly char SELECTION_MENU_SPLIT = '_';
+
+      /// <summary>
+      /// Builds a component builder with buttons and a selection menu.
+      /// Giving null customIDs will auto generate selection custom ids.
+      /// </summary>
+      /// <param name="options">List of options in the menu.</param>
+      /// <param name="placeHolder">Placeholder string for the menu.</param>
+      /// <returns>ComponentBuilder with buttons, otherwise null.</returns>
+      public static MessageComponent BuildSelectionMenu(string[] options, string placeHolder)
+      {
+         if (options.Length == 0)
+         {
+            return null;
+         }
+
+         SelectMenuBuilder menu = new SelectMenuBuilder();
+         menu.WithPlaceholder(placeHolder);
+         menu.WithCustomId("selection_menu");
+         menu.WithMinValues(1);
+         menu.WithMaxValues(1);
+
+         for (int i = 0; i < options.Length; i++)
+         {
+            menu.AddOption(options[i], $"{SELECTION_MENU_PREFIX}{i + 1}");
+         }
+
+         ComponentBuilder component = new ComponentBuilder();
+         component.WithSelectMenu(menu);
+
+         return component.Build();
+      }
+#endif
       /// <summary>
       /// Builds a component builder with buttons.
       /// Giving null customIDs will auto generate selection custom ids.

@@ -120,7 +120,7 @@ namespace PokeStar.ModuleParents
          new Emoji("❓"),
          new Emoji("⬆️"),
       };
-#if BUTTONS
+#if COMPONENTS
       // Components ***********************************************************
 
       /// <summary>
@@ -413,7 +413,7 @@ namespace PokeStar.ModuleParents
             text.Contains(extraEmojis[(int)EXTRA_EMOJI_INDEX.CHANGE_TIER].Name);
       }
 
-#if BUTTONS
+#if COMPONENTS
       // Message component handlers *******************************************
 
       /// <summary>
@@ -2550,7 +2550,7 @@ namespace PokeStar.ModuleParents
 
       // Miscellaneous ********************************************************
 
-#if BUTTONS
+#if COMPONENTS
       /// <summary>
       /// Sends a raid message using a given embed method.
       /// </summary>
@@ -2736,7 +2736,7 @@ namespace PokeStar.ModuleParents
          {
             if (raid.IsSingleStop())
             {
-#if BUTTONS
+#if COMPONENTS
                SendRaidMessage(raid, Connections.GetPokemonPicture(raid.GetCurrentBoss()), BuildRaidEmbed, channel,
                   Global.BuildButtons(raidEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                      raidComponents.Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -2747,7 +2747,7 @@ namespace PokeStar.ModuleParents
             }
             else
             {
-#if BUTTONS
+#if COMPONENTS
                SendRaidMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidTrainEmbed, channel, Global.BuildButtons(
                   raidEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                   raidComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -2761,7 +2761,7 @@ namespace PokeStar.ModuleParents
          {
             if (mule.IsSingleStop())
             {
-#if BUTTONS
+#if COMPONENTS
                SendRaidMuleMessage(mule, Connections.GetPokemonPicture(mule.GetCurrentBoss()), BuildRaidMuleEmbed, channel,
                   Global.BuildButtons(muleEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                      muleComponents.Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -2772,7 +2772,7 @@ namespace PokeStar.ModuleParents
             }
             else
             {
-#if BUTTONS
+#if COMPONENTS
                SendRaidMuleMessage(mule, RAID_TRAIN_IMAGE_NAME, BuildRaidMuleTrainEmbed, channel, Global.BuildButtons(
                   muleEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                   muleComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -2809,7 +2809,7 @@ namespace PokeStar.ModuleParents
 
             if (parent is Raid raid)
             {
-#if BUTTONS
+#if COMPONENTS
                SendRaidMessage(raid, Connections.GetPokemonPicture(raid.GetCurrentBoss()), BuildRaidEmbed, channel,
                   Global.BuildButtons(raidEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                      raidComponents.Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -2820,7 +2820,7 @@ namespace PokeStar.ModuleParents
             }
             else if (parent is RaidMule mule)
             {
-#if BUTTONS
+#if COMPONENTS
                SendRaidMuleMessage(mule, Connections.GetPokemonPicture(mule.GetCurrentBoss()), BuildRaidMuleEmbed, channel,
                   Global.BuildButtons(muleEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                      muleComponents.Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));

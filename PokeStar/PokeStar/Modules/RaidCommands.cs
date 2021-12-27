@@ -54,7 +54,7 @@ namespace PokeStar.Modules
             int selectType = allBosses[calcTier].Count > Global.SELECTION_EMOJIS.Length ? (int)SELECTION_TYPES.PAGE : (int)SELECTION_TYPES.STANDARD;
 
             IEmote[] emotes = Global.SELECTION_EMOJIS.Take(potentials.Count).ToArray();
-#if BUTTONS
+#if COMPONENTS
             string[] components = Global.BuildSelectionCustomIDs(emotes.Length);
 #endif
 
@@ -62,7 +62,7 @@ namespace PokeStar.Modules
             {
                emotes = emotes.Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                               .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
-#if BUTTONS
+#if COMPONENTS
                components = components.Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                                       .Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
 #endif
@@ -70,7 +70,7 @@ namespace PokeStar.Modules
 
             string fileName = $"Egg{calcTier}.png";
             Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
             RestUserMessage selectMsg = await Context.Channel.SendFileAsync(fileName, 
                embed: BuildBossSelectEmbed(potentials, selectType, raid.BossPage, fileName), components: Global.BuildButtons(emotes, components));
 #else
@@ -78,7 +78,7 @@ namespace PokeStar.Modules
 #endif
             raidMessages.Add(selectMsg.Id, raid);
             Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
             selectMsg.AddReactionsAsync(emotes);
 #endif
          }
@@ -88,7 +88,7 @@ namespace PokeStar.Modules
             {
                AllBosses = allBosses
             };
-#if BUTTONS
+#if COMPONENTS
             SendRaidMessage(raid, Connections.GetPokemonPicture(raid.GetCurrentBoss()), BuildRaidEmbed, Context.Channel, 
                Global.BuildButtons(raidEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                   raidComponents.Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -141,7 +141,7 @@ namespace PokeStar.Modules
             int selectType = allBosses[calcTier].Count > Global.SELECTION_EMOJIS.Length ? (int)SELECTION_TYPES.PAGE : (int)SELECTION_TYPES.STANDARD;
 
             IEmote[] emotes = Global.SELECTION_EMOJIS.Take(potentials.Count).ToArray();
-#if BUTTONS
+#if COMPONENTS
             string[] components = Global.BuildSelectionCustomIDs(emotes.Length);
 #endif
 
@@ -149,7 +149,7 @@ namespace PokeStar.Modules
             {
                emotes = emotes.Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                               .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
-#if BUTTONS
+#if COMPONENTS
                components = components.Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                                       .Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
 #endif
@@ -157,7 +157,7 @@ namespace PokeStar.Modules
 
             string fileName = $"Egg{calcTier}.png";
             Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
             RestUserMessage selectMsg = await Context.Channel.SendFileAsync(fileName, 
                embed: BuildBossSelectEmbed(potentials, selectType, raid.BossPage, fileName), components: Global.BuildButtons(emotes, components));
 #else
@@ -165,7 +165,7 @@ namespace PokeStar.Modules
 #endif
             raidMessages.Add(selectMsg.Id, raid);
             Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
             selectMsg.AddReactionsAsync(emotes);
 #endif
          }
@@ -175,7 +175,7 @@ namespace PokeStar.Modules
             {
                AllBosses = allBosses
             };
-#if BUTTONS
+#if COMPONENTS
             SendRaidMuleMessage(raid, Connections.GetPokemonPicture(raid.GetCurrentBoss()), BuildRaidMuleEmbed, Context.Channel,
                Global.BuildButtons(muleEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                   muleComponents.Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -228,7 +228,7 @@ namespace PokeStar.Modules
             int selectType = allBosses[calcTier].Count > Global.SELECTION_EMOJIS.Length ? (int)SELECTION_TYPES.PAGE : (int)SELECTION_TYPES.STANDARD;
 
             IEmote[] emotes = Global.SELECTION_EMOJIS.Take(potentials.Count).ToArray();
-#if BUTTONS
+#if COMPONENTS
             string[] components = Global.BuildSelectionCustomIDs(emotes.Length);
 #endif
 
@@ -236,7 +236,7 @@ namespace PokeStar.Modules
             {
                emotes = emotes.Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                               .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
-#if BUTTONS
+#if COMPONENTS
                components = components.Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                                       .Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
 #endif
@@ -244,7 +244,7 @@ namespace PokeStar.Modules
 
             string fileName = $"Egg{calcTier}.png";
             Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
             RestUserMessage selectMsg = await Context.Channel.SendFileAsync(fileName, 
                embed: BuildBossSelectEmbed(potentials, selectType, raid.BossPage, fileName), components: Global.BuildButtons(emotes, components));
 #else
@@ -252,7 +252,7 @@ namespace PokeStar.Modules
 #endif
             raidMessages.Add(selectMsg.Id, raid);
             Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
             selectMsg.AddReactionsAsync(emotes);
 #endif
          }
@@ -263,7 +263,7 @@ namespace PokeStar.Modules
             {
                AllBosses = allBosses
             };
-#if BUTTONS
+#if COMPONENTS
             SendRaidMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidTrainEmbed, Context.Channel, Global.BuildButtons(
                raidEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                raidComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -316,7 +316,7 @@ namespace PokeStar.Modules
             int selectType = allBosses[calcTier].Count > Global.SELECTION_EMOJIS.Length ? (int)SELECTION_TYPES.PAGE : (int)SELECTION_TYPES.STANDARD;
 
             IEmote[] emotes = Global.SELECTION_EMOJIS.Take(potentials.Count).ToArray();
-#if BUTTONS
+#if COMPONENTS
             string[] components = Global.BuildSelectionCustomIDs(emotes.Length);
 #endif
 
@@ -324,7 +324,7 @@ namespace PokeStar.Modules
             {
                emotes = emotes.Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                               .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
-#if BUTTONS
+#if COMPONENTS
                components = components.Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                                       .Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
 #endif
@@ -332,7 +332,7 @@ namespace PokeStar.Modules
 
             string fileName = $"Egg{calcTier}.png";
             Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
             RestUserMessage selectMsg = await Context.Channel.SendFileAsync(fileName, 
                embed: BuildBossSelectEmbed(potentials, selectType, raid.BossPage, fileName), components: Global.BuildButtons(emotes, components));
 #else
@@ -340,7 +340,7 @@ namespace PokeStar.Modules
 #endif
             raidMessages.Add(selectMsg.Id, raid);
             Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
             selectMsg.AddReactionsAsync(emotes);
 #endif
          }
@@ -351,7 +351,7 @@ namespace PokeStar.Modules
             {
                AllBosses = allBosses
             };
-#if BUTTONS
+#if COMPONENTS
             SendRaidMuleMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidMuleTrainEmbed, Context.Channel, Global.BuildButtons(
                muleEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                muleComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -412,7 +412,7 @@ namespace PokeStar.Modules
             {
                AllBosses = allBosses
             };
-#if BUTTONS
+#if COMPONENTS
             SendRaidMessage(raid, Connections.GetPokemonPicture(raid.GetCurrentBoss()), BuildRaidEmbed, Context.Channel,
                Global.BuildButtons(raidEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                   raidComponents.Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -474,7 +474,7 @@ namespace PokeStar.Modules
             {
                AllBosses = allBosses
             };
-#if BUTTONS
+#if COMPONENTS
             SendRaidMuleMessage(raid, Connections.GetPokemonPicture(raid.GetCurrentBoss()), BuildRaidMuleEmbed, Context.Channel,
                Global.BuildButtons(muleEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                   muleComponents.Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -537,7 +537,7 @@ namespace PokeStar.Modules
             {
                AllBosses = allBosses
             };
-#if BUTTONS
+#if COMPONENTS
             SendRaidMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidTrainEmbed, Context.Channel, Global.BuildButtons(
                raidEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                raidComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -601,7 +601,7 @@ namespace PokeStar.Modules
             {
                AllBosses = allBosses
             };
-#if BUTTONS
+#if COMPONENTS
             SendRaidMuleMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidMuleTrainEmbed, Context.Channel, Global.BuildButtons(
                muleEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                muleComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -645,14 +645,14 @@ namespace PokeStar.Modules
             int selectType = allBosses[calcTier].Count > Global.SELECTION_EMOJIS.Length ? (int)SELECTION_TYPES.PAGE : (int)SELECTION_TYPES.STANDARD;
 
             IEmote[] emotes = Global.SELECTION_EMOJIS.Take(potentials.Count).ToArray();
-#if BUTTONS
+#if COMPONENTS
             string[] components = Global.BuildSelectionCustomIDs(emotes.Length);
 #endif
             if (allBosses[calcTier].Count > Global.SELECTION_EMOJIS.Length)
             {
                emotes = emotes.Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                               .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
-#if BUTTONS
+#if COMPONENTS
                components = components.Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR])
                                       .Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.BACK_ARROW]).ToArray();
 #endif
@@ -660,7 +660,7 @@ namespace PokeStar.Modules
 
             fileName = $"Egg{calcTier}.png";
             Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
             RestUserMessage selectMsg = await Context.Channel.SendFileAsync(fileName, 
                embed: BuildBossSelectEmbed(potentials, selectType, 0, fileName), components: Global.BuildButtons(emotes, components));
 #else
@@ -668,7 +668,7 @@ namespace PokeStar.Modules
 #endif
             guideMessages.Add(selectMsg.Id, new RaidGuideSelect(calcTier, potentials));
             Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
             selectMsg.AddReactionsAsync(emotes);
 #endif
          }

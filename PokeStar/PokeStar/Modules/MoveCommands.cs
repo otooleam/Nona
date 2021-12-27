@@ -34,15 +34,20 @@ namespace PokeStar.Modules
 
             string fileName = GENERIC_IMAGE;
             Connections.CopyFile(fileName);
-#if BUTTONS
+#if COMPONENTS
+#if DROP_DOWNS
+            RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName,
+               embed: BuildDexSelectEmbed(fileName), components: Global.BuildButtonsWithMenu(moveNames.ToArray()));
+#else
             RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, 
                embed: BuildDexSelectEmbed(moveNames, fileName), components: Global.BuildButtons(Global.SELECTION_EMOJIS));
+#endif
 #else
             RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildDexSelectEmbed(moveNames, fileName));
 #endif
             dexSelectMessages.Add(dexMessage.Id, new DexSelectionMessage((int)DEX_MESSAGE_TYPES.MOVE_MESSAGE, moveNames));
             Connections.DeleteFile(fileName);
-#if !BUTTONS
+#if !COMPONENTS
             await dexMessage.AddReactionsAsync(Global.SELECTION_EMOJIS);
 #endif
          }

@@ -167,12 +167,10 @@ namespace PokeStar.ConnectionInterface
       public List<string> GetPokemonByNumber(int pokemonNumber)
       {
          List<string> pokemon = new List<string>();
-         string order = (pokemonNumber == Global.ARCEUS_NUMBER || pokemonNumber == Global.UNOWN_NUMBER) ? "ORDER BY NEWID()" : "";
 
          string queryString = $@"SELECT Name 
                                  FROM Pokemon 
-                                 WHERE Number={pokemonNumber}
-                                 {order};";
+                                 WHERE Number={pokemonNumber};";
 
          using (SqlConnection conn = GetConnection())
          {

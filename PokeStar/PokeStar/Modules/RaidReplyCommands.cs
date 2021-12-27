@@ -75,7 +75,7 @@ namespace PokeStar.Modules
                   IEmote[] emotes = new List<IEmote>(Global.SELECTION_EMOJIS.Take(parent.AllBosses[calcTier].Count))
                      .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR]).Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW])
                      .Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CHANGE_TIER]).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray();
-#if BUTTONS
+#if COMPONENTS
                   RestUserMessage bossMsg = await Context.Channel.SendMessageAsync(text: $"{author.SocketPlayer.Mention}",
                      embed: BuildBossSelectEmbed(parent.AllBosses[calcTier], selectType, parent.BossPage, null),
                      components: Global.BuildButtons(emotes, Global.BuildSelectionCustomIDs(Global.SELECTION_EMOJIS.Take(parent.AllBosses[calcTier].Count).Count())
@@ -88,7 +88,7 @@ namespace PokeStar.Modules
                   subMessages.Add(bossMsg.Id, new RaidSubMessage((int)SUB_MESSAGE_TYPES.EDIT_BOSS_SUB_MESSAGE, raidMessage.Id));
 
 
-#if !BUTTONS
+#if !COMPONENTS
                   bossMsg.AddReactionsAsync(emotes);
 #endif
                }
@@ -496,7 +496,7 @@ namespace PokeStar.Modules
 
             if (parent is Raid raid)
             {
-#if BUTTONS
+#if COMPONENTS
                SendRaidMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidTrainEmbed, Context.Channel, Global.BuildButtons(
                   raidEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                   raidComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -507,7 +507,7 @@ namespace PokeStar.Modules
             }
             else if (parent is RaidMule mule)
             {
-#if BUTTONS
+#if COMPONENTS
                SendRaidMuleMessage(mule, RAID_TRAIN_IMAGE_NAME, BuildRaidMuleTrainEmbed, Context.Channel, Global.BuildButtons(
                   muleEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
                   muleComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
@@ -654,11 +654,11 @@ namespace PokeStar.Modules
          await ((SocketUserMessage)message).ModifyAsync(x =>
          {
             x.Embed = BuildTierSelectEmbed();
-#if BUTTONS
+#if COMPONENTS
             x.Components = Global.BuildButtons(emotes, new List<string>(tierComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray());
 #endif
          });
-#if !BUTTONS
+#if !COMPONENTS
          ((SocketUserMessage)message).AddReactionsAsync(emotes);
 #endif
 
