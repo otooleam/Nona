@@ -466,7 +466,7 @@ namespace PokeStar.Modules
       [RegisterChannel('D')]
       public async Task DPS()
       {
-         string fileName = GENERIC_IMAGE;
+         string fileName = BATTLE_IMAGE;
          Pokemon pokemon = Connections.Instance().GetPokemon(Connections.Instance().GetPokemonByNumber(Global.DUMMY_POKE_NUM).First());
          Connections.Instance().GetPokemonCounter(ref pokemon);
          Connections.CopyFile(fileName);

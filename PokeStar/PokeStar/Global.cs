@@ -1089,12 +1089,11 @@ namespace PokeStar
       public static readonly char SELECTION_MENU_SPLIT = '_';
 
       /// <summary>
-      /// Builds a component builder with buttons and a selection menu.
-      /// Giving null customIDs will auto generate selection custom ids.
+      /// Builds a component with a selection menu.
       /// </summary>
       /// <param name="options">List of options in the menu.</param>
       /// <param name="placeHolder">Placeholder string for the menu.</param>
-      /// <returns>ComponentBuilder with buttons, otherwise null.</returns>
+      /// <returns>Component with selection menu.</returns>
       public static MessageComponent BuildSelectionMenu(string[] options, string placeHolder)
       {
          if (options.Length == 0)
@@ -1118,14 +1117,65 @@ namespace PokeStar
 
          return component.Build();
       }
+
+      /// <summary>
+      /// Builds a component with buttons and a selection menu.
+      /// Giving null customIDs will auto generate selection custom ids.
+      /// </summary>
+      /// <param name="options">List of options in the menu.</param>
+      /// <param name="placeHolder">Placeholder string for the menu.</param>
+      /// <param name="emotes">List of button emotes.</param>
+      /// <param name="customIDs">List of button component ids.</param>
+      /// <returns>Component with selection menu and buttons.</returns>
+      public static MessageComponent BuildSelectionMenuWithButtons(string[] options, string placeHolder, IEmote[] emotes, string[] customIDs = null)
+      {
+         if (options.Length == 0)
+         {
+            return null;
+         }
+
+         SelectMenuBuilder menu = new SelectMenuBuilder();
+         menu.WithPlaceholder(placeHolder);
+         menu.WithCustomId("selection_menu");
+         menu.WithMinValues(1);
+         menu.WithMaxValues(1);
+
+         for (int i = 0; i < options.Length; i++)
+         {
+            menu.AddOption(options[i], $"{SELECTION_MENU_PREFIX}{i + 1}");
+         }
+
+         ComponentBuilder component = new ComponentBuilder();
+         component.WithSelectMenu(menu);
+
+         string[] IDs = customIDs ?? BuildSelectionCustomIDs(emotes.Length);
+
+         if (emotes.Length != IDs.Length)
+         {
+            return null;
+         }
+
+         for (int i = 0; i < emotes.Length; i++)
+         {
+            component.WithButton(customId: IDs[i], emote: emotes[i]);
+         }
+
+         return component.Build();
+      }
+
+      public static int GetOptionIndex(string data)
+      {
+         return int.Parse(data.Split(SELECTION_MENU_SPLIT)[1]) - 1;
+      }
+
 #endif
       /// <summary>
-      /// Builds a component builder with buttons.
+      /// Builds a builder with buttons.
       /// Giving null customIDs will auto generate selection custom ids.
       /// </summary>
       /// <param name="emotes">List of button emotes.</param>
       /// <param name="customIDs">List of component ids.</param>
-      /// <returns>ComponentBuilder with buttons, otherwise null.</returns>
+      /// <returns>Component with buttons.</returns>
       public static MessageComponent BuildButtons(IEmote[] emotes, string[] customIDs = null)
       {
          string[] IDs = customIDs ?? BuildSelectionCustomIDs(emotes.Length);

@@ -32,12 +32,12 @@ namespace PokeStar.Modules
          {
             List<string> moveNames = Connections.Instance().SearchMove(move);
 
-            string fileName = GENERIC_IMAGE;
+            string fileName = BATTLE_IMAGE;
             Connections.CopyFile(fileName);
 #if COMPONENTS
 #if DROP_DOWNS
             RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName,
-               embed: BuildDexSelectEmbed(fileName), components: Global.BuildButtonsWithMenu(moveNames.ToArray()));
+               embed: BuildDexSelectEmbed(fileName), components: Global.BuildSelectionMenu(moveNames.ToArray(), Global.DEFAULT_MENU_PLACEHOLDER));
 #else
             RestUserMessage dexMessage = await Context.Channel.SendFileAsync(fileName, 
                embed: BuildDexSelectEmbed(moveNames, fileName), components: Global.BuildButtons(Global.SELECTION_EMOJIS));
@@ -53,7 +53,7 @@ namespace PokeStar.Modules
          }
          else
          {
-            string fileName = GENERIC_IMAGE;
+            string fileName = BATTLE_IMAGE;
             Connections.CopyFile(fileName);
             await Context.Channel.SendFileAsync(fileName, embed: BuildMoveEmbed(pkmnMove, fileName));
             Connections.DeleteFile(fileName);
@@ -91,7 +91,7 @@ namespace PokeStar.Modules
                   sbCharge.AppendLine(move);
                }
 
-               string fileName = GENERIC_IMAGE;
+               string fileName = BATTLE_IMAGE;
                EmbedBuilder embed = new EmbedBuilder();
                embed.WithTitle($"{type.ToUpper()} moves");
                embed.WithDescription(Global.NONA_EMOJIS[$"{type}_emote"]);
@@ -115,7 +115,7 @@ namespace PokeStar.Modules
                   sb.AppendLine(move);
                }
 
-               string fileName = GENERIC_IMAGE;
+               string fileName = BATTLE_IMAGE;
                EmbedBuilder embed = new EmbedBuilder();
                embed.AddField($"{type.ToUpper()} {category.ToUpper()} Moves", sb.ToString());
                embed.WithDescription(Global.NONA_EMOJIS[$"{type}_emote"]);

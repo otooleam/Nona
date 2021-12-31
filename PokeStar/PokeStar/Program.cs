@@ -302,6 +302,10 @@ namespace PokeStar
             {
                await DexCommandParent.DexMessageMenuHandle(message, component, guild);
             }
+            else if (HelpCommands.IsHelpMessage(message.Id))
+            {
+               await HelpCommands.HelpMessageMenuHandle(message, component, guild);
+            }
             await component.DeferAsync();
          }
          return Task.CompletedTask;

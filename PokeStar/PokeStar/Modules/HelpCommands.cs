@@ -73,8 +73,16 @@ namespace PokeStar.Modules
          {
             List<CommandInfo> validCommands = Global.COMMAND_INFO.Where(cmdInfo => CheckShowCommand(cmdInfo.Name, isAdmin, isNona)).ToList();
 #if COMPONENTS
+#if DROP_DOWNS
+            List<CommandInfo> commands = validCommands.Take(MAX_COMMANDS).ToList();
+            IUserMessage msg = await ReplyAsync(embed: BuildGeneralHelpEmbed(commands, prefix, 1),
+                                                components: Global.BuildSelectionMenuWithButtons(GetCommandNames(commands).ToArray(), 
+                                                                                                 Global.DEFAULT_MENU_PLACEHOLDER,
+                                                                                                 HELP_EMOJIS, HELP_COMPONENTS));
+#else
             IUserMessage msg = await ReplyAsync(embed: BuildGeneralHelpEmbed(validCommands.Take(MAX_COMMANDS).ToList(), prefix, 1), 
                                                 components: Global.BuildButtons(HELP_EMOJIS, HELP_COMPONENTS));
+#endif
 #else
             IUserMessage msg = await ReplyAsync(embed: BuildGeneralHelpEmbed(validCommands.Take(MAX_COMMANDS).ToList(), prefix, 1));
 #endif
@@ -86,43 +94,7 @@ namespace PokeStar.Modules
          else if (Global.COMMAND_INFO.FirstOrDefault(x => x.Name.Equals(command, StringComparison.OrdinalIgnoreCase) || x.Aliases.Contains(command)) is CommandInfo cmdInfo
             && CheckShowCommand(cmdInfo.Name, isAdmin, isNona))
          {
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.WithColor(Global.EMBED_COLOR_HELP_RESPONSE);
-            embed.WithTitle($"**{prefix}{cmdInfo.Name} command help**");
-            embed.WithDescription(cmdInfo.Summary ?? "No description available");
-            if (cmdInfo.Aliases.Count > 1)
-            {
-               StringBuilder sb = new StringBuilder();
-               foreach (string alias in cmdInfo.Aliases)
-               {
-                  if (!alias.Equals(command, StringComparison.OrdinalIgnoreCase))
-                  {
-                     sb.Append($"{alias}, ");
-                  }
-               }
-               embed.AddField("Alternate Command:", sb.ToString().TrimEnd().TrimEnd(','));
-            }
-            if (cmdInfo.Remarks != null)
-            {
-               embed.AddField("**Additional Information:**", cmdInfo.Remarks);
-            }
-
-            if (cmdInfo.Parameters.Count == 0)
-            {
-               embed.WithFooter("*This command does not take any parameters.");
-            }
-            else
-            {
-               StringBuilder sb = new StringBuilder();
-               foreach (ParameterInfo param in cmdInfo.Parameters)
-               {
-                  embed.AddField($"**<{param.Name}>**", param.Summary ?? "No description available");
-                  sb.Append($" {param.Name}");
-               }
-               embed.AddField($"**Example:**", $"{prefix}{cmdInfo.Name}{sb}");
-            }
-
-            await ReplyAsync(embed: embed.Build());
+            await ReplyAsync(embed: BuildCommandHelpEmbed(cmdInfo, prefix));
          }
          else
          {
@@ -163,6 +135,25 @@ namespace PokeStar.Modules
       }
 
 #if COMPONENTS
+#if DROP_DOWNS
+      /// <summary>
+      /// Handles a selection made on a help message.
+      /// </summary>
+      /// <param name="message">Message that the component is on.</param>
+      /// <param name="component">Component that the selection was made on.</param>
+      /// <param name="guildId">Id of the guild that the message was sent in.</param>
+      /// <returns>Completed Task.</returns>
+      public static async Task HelpMessageMenuHandle(IMessage message, SocketMessageComponent component, ulong guildId)
+      {
+         HelpMessage helpMessage = helpMessages[message.Id];
+         int option = Global.GetOptionIndex(component.Data.Values.ElementAt(0));
+         string prefix = Connections.Instance().GetPrefix(guildId);
+         CommandInfo cmdInfo = helpMessage.Commands.ElementAt((helpMessage.Page * MAX_COMMANDS) + option);
+         
+         await component.Channel.SendMessageAsync(embed: BuildCommandHelpEmbed(cmdInfo, prefix));
+         await message.DeleteAsync();
+      }
+#endif
       /// <summary>
       /// Handles a button press on a help message.
       /// </summary>
@@ -190,6 +181,10 @@ namespace PokeStar.Modules
             await ((SocketUserMessage)message).ModifyAsync(x =>
             {
                x.Embed = BuildGeneralHelpEmbed(helpMessage.Commands.Skip(offset * MAX_COMMANDS).Take(MAX_COMMANDS).ToList(), prefix, offset + 1);
+#if DROP_DOWNS
+               x.Components = Global.BuildSelectionMenuWithButtons(GetCommandNames(helpMessage.Commands.Skip(offset * MAX_COMMANDS).Take(MAX_COMMANDS).ToList()).ToArray(),
+                                                                   Global.DEFAULT_MENU_PLACEHOLDER, HELP_EMOJIS, HELP_COMPONENTS);
+#endif
             });
          }
 
@@ -230,14 +225,13 @@ namespace PokeStar.Modules
          await message.RemoveReactionAsync(reaction.Emote, (SocketGuildUser)reaction.User);
       }
 #endif
-
       /// <summary>
       /// Builds a general help embed.
       /// </summary>
       /// <param name="commands">List of commands to display.</param>
       /// <param name="prefix">Prefix used for the server.</param>
       /// <param name="page">Current page number.</param>
-      /// <returns>Embed for viewing a General list of commands.</returns>
+      /// <returns>Embed for viewing a general list of commands.</returns>
       private static Embed BuildGeneralHelpEmbed(List<CommandInfo> commands, string prefix, int page)
       {
          EmbedBuilder embed = new EmbedBuilder();
@@ -251,5 +245,69 @@ namespace PokeStar.Modules
          embed.WithFooter($"Run \"{prefix}help <command name>\" to get help for a specific command.");
          return embed.Build();
       }
+
+      /// <summary>
+      /// Builds a command help embed.
+      /// </summary>
+      /// <param name="cmdInfo">Command info to display.</param>
+      /// <param name="prefix">Prefix used for the server.</param>
+      /// <returns>Emebed for viewing a single command. </returns>
+      private static Embed BuildCommandHelpEmbed(CommandInfo cmdInfo, string prefix)
+      {
+         EmbedBuilder embed = new EmbedBuilder();
+         embed.WithColor(Global.EMBED_COLOR_HELP_RESPONSE);
+         embed.WithTitle($"**{prefix}{cmdInfo.Name} command help**");
+         embed.WithDescription(cmdInfo.Summary ?? "No description available");
+         if (cmdInfo.Aliases.Count > 1)
+         {
+            StringBuilder sb = new StringBuilder();
+            foreach (string alias in cmdInfo.Aliases)
+            {
+               if (!alias.Equals(cmdInfo.Name, StringComparison.OrdinalIgnoreCase))
+               {
+                  sb.Append($"{alias}, ");
+               }
+            }
+            embed.AddField("Alternate Command:", sb.ToString().TrimEnd().TrimEnd(','));
+         }
+         if (cmdInfo.Remarks != null)
+         {
+            embed.AddField("**Additional Information:**", cmdInfo.Remarks);
+         }
+
+         if (cmdInfo.Parameters.Count == 0)
+         {
+            embed.WithFooter("*This command does not take any parameters.");
+         }
+         else
+         {
+            StringBuilder sb = new StringBuilder();
+            foreach (ParameterInfo param in cmdInfo.Parameters)
+            {
+               embed.AddField($"**<{param.Name}>**", param.Summary ?? "No description available");
+               sb.Append($" {param.Name}");
+            }
+            embed.AddField($"**Example:**", $"{prefix}{cmdInfo.Name}{sb}");
+         }
+
+         return embed.Build();
+      }
+
+#if COMPONENTS && DROP_DOWNS
+      /// <summary>
+      /// Gets all command names in a given list.
+      /// </summary>
+      /// <param name="commands">List of command info.</param>
+      /// <returns>List of command names.</returns>
+      private static List<string> GetCommandNames(List<CommandInfo> commands)
+      {
+         List<string> commandNames = new List<string>();
+         foreach (CommandInfo cmd in commands)
+         {
+            commandNames.Add(cmd.Name);
+         }
+         return commandNames;
+      }
+#endif
    }
 }

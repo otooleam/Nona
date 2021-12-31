@@ -23,11 +23,16 @@ namespace PokeStar.ModuleParents
       protected static readonly string POKEDEX_SELECTION_IMAGE = "quest_pokemon.png";
 
       /// <summary>
-      /// Generic dex image file name.
+      /// Battle dex image file name.
       /// </summary>
-      protected static readonly string GENERIC_IMAGE = "battle.png";
+      protected static readonly string BATTLE_IMAGE = "battle.png";
 
+#if COMPONENTS && DROP_DOWNS
+      /// <summary>
+      /// Placeholder for Dex selection menu.
+      /// </summary>
       private static readonly string DEX_MENU_PLACEHOLDER = "Change Display";
+#endif
 
       // Message holders ******************************************************
 
@@ -237,7 +242,7 @@ namespace PokeStar.ModuleParents
       public static async Task DexSelectMessageMenuHandle(IMessage message, SocketMessageComponent component, ulong guildId)
       {
          DexSelectionMessage dexMessage = dexSelectMessages[message.Id];
-         int option = int.Parse(component.Data.Values.ElementAt(0).Split(Global.SELECTION_MENU_SPLIT)[1]) - 1;
+         int option = Global.GetOptionIndex(component.Data.Values.ElementAt(0));
          await message.DeleteAsync();
          if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.DEX_MESSAGE)
          {
@@ -300,7 +305,7 @@ namespace PokeStar.ModuleParents
          else if (dexMessage.Type == (int)DEX_MESSAGE_TYPES.MOVE_MESSAGE)
          {
             Move pkmnMove = Connections.Instance().GetMove(dexMessage.Selections[option]);
-            string fileName = GENERIC_IMAGE;
+            string fileName = BATTLE_IMAGE;
             Connections.CopyFile(fileName);
             await component.Channel.SendFileAsync(fileName, embed: BuildMoveEmbed(pkmnMove, fileName));
             Connections.DeleteFile(fileName);
