@@ -46,6 +46,12 @@ namespace PokeStar.ModuleParents
       /// </summary>
       protected static readonly Dictionary<ulong, RaidGuideSelect> guideMessages = new Dictionary<ulong, RaidGuideSelect>();
 
+      /// <summary>
+      /// Saved raid poll messages. 
+      /// Elements are removed upon poll closure.
+      /// </summary>
+      protected static readonly Dictionary<ulong, Dictionary<string, int>> pollMessages = new Dictionary<ulong, Dictionary<string, int>>();
+
       // Emotes ***************************************************************
 
       /// <summary>
@@ -390,6 +396,16 @@ namespace PokeStar.ModuleParents
       public static bool IsRaidGuideMessage(ulong id)
       {
          return guideMessages.ContainsKey(id);
+      }
+
+      /// <summary>
+      /// Checks if a message is a raid poll message.
+      /// </summary>
+      /// <param name="id">Id of the message.</param>
+      /// <returns>True if the message is a raid poll message, otherwise false.</returns>
+      public static bool IsRaidPollMessage(ulong id)
+      {
+         return pollMessages.ContainsKey(id);
       }
 
       /// <summary>
@@ -1331,6 +1347,39 @@ namespace PokeStar.ModuleParents
          }
       }
 
+      /// <summary>
+      /// Handles a reaction on a raid poll message.
+      /// </summary>
+      /// <param name="message">Message that was reacted on.</param>
+      /// <param name="reaction">Reaction that was sent.</param>
+      /// <returns>Completed Task.</returns>
+      public static async Task RaidPollMessageReactionHandle(IMessage message, SocketReaction reaction)
+      {
+         await ((SocketUserMessage)message).RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+         Dictionary<string, int> bosses = pollMessages[message.Id];
+         bool pollClosed = false;
+
+         if (reaction.Emote.Equals(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]))
+         {
+            pollMessages.Remove(message.Id);
+            pollClosed = true;
+         }
+
+         for (int i = 0; i < Global.SELECTION_EMOJIS.Length; i++)
+         {
+            if (reaction.Emote.Equals(Global.SELECTION_EMOJIS[i]))
+            {
+               bosses[bosses.ElementAt(i).Key]++;
+            }
+         }
+
+         string img = message.Embeds.First().Thumbnail.Value.Url;
+         await ((SocketUserMessage)message).ModifyAsync(x =>
+         {
+            x.Embed = BuildRaidPollEmbed(bosses, img.Substring(img.LastIndexOf('/') + 1), pollClosed);
+         });
+      }
+
       // Reaction handlers ****************************************************
 
       /// <summary>
@@ -2088,7 +2137,7 @@ namespace PokeStar.ModuleParents
          {
             embed.WithThumbnailUrl($"attachment://{fileName}");
          }
-         embed.AddField("Please Select Boss", sb.ToString());
+         embed.AddField("Please Select a Boss", sb.ToString());
 
          return embed.Build();
       }
@@ -2260,6 +2309,33 @@ namespace PokeStar.ModuleParents
 
          embed.WithColor(Global.EMBED_COLOR_RAID_RESPONSE);
          embed.WithFooter($"{Global.STAB_SYMBOL} denotes STAB move.\n {Global.LEGACY_MOVE_SYMBOL} denotes Legacy move.");
+         return embed.Build();
+      }
+
+      /// <summary>
+      /// Builds a raid boss poll embed.
+      /// </summary>
+      /// <param name="poll">Dictionary of potential raid bosses and number of votes.</param>
+      /// <param name="fileName">Name of image file.</param>
+      /// <returns>Embed for a raid boss poll.</returns>
+      protected static Embed BuildRaidPollEmbed(Dictionary<string, int> poll, string fileName, bool closed)
+      {
+         StringBuilder sb = new StringBuilder();
+         for (int i = 0; i < poll.Count; i++)
+         {
+            KeyValuePair<string, int> boss = poll.ElementAt(i);
+            sb.AppendLine($"{Global.SELECTION_EMOJIS[i]} ({boss.Value}) {boss.Key}");
+         }
+
+         sb.AppendLine($"{extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]} Close Poll");
+
+         EmbedBuilder embed = new EmbedBuilder();
+         embed.WithColor(Global.EMBED_COLOR_RAID_RESPONSE);
+         embed.WithTitle(closed ? "Poll is Closed" : "Poll is Open");
+         embed.WithDescription($"Currently leading: {GetMostVotes(poll)}");
+         embed.WithThumbnailUrl($"attachment://{fileName}");
+         embed.AddField("Please Select a Boss", sb.ToString());
+
          return embed.Build();
       }
 
@@ -2546,6 +2622,42 @@ namespace PokeStar.ModuleParents
             return Global.NONA_EMOJIS["instinct_emote"];
          }
          return "";
+      }
+
+      /// <summary>
+      /// Finds which boss(es) has the most votes.
+      /// </summary>
+      /// <param name="poll">Dictionary of bosses and votes.</param>
+      /// <returns>Bosses as a formated string.</returns>
+      private static string GetMostVotes(Dictionary<string, int> poll)
+      {
+         List<string> leading = poll.Where(boss => boss.Value == poll.Values.ToList().Max()).Select(boss => boss.Key).ToList();
+         if (leading.Count == poll.Count)
+         {
+            return "None";
+         }
+         else if (leading.Count == 2)
+         {
+            return $"{leading.First()} and {leading.Last()}";
+         }
+         else if (leading.Count == 1)
+         {
+            return leading.First();
+         }
+
+         StringBuilder sb = new StringBuilder();
+         foreach (string boss in leading)
+         {
+            if (boss.Equals(leading.Last()))
+            {
+               sb.Append($"and {boss}");
+            }
+            else
+            {
+               sb.Append($"{boss}, ");
+            }
+         }
+         return sb.ToString();
       }
 
       // Miscellaneous ********************************************************

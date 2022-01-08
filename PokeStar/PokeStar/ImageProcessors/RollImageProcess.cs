@@ -60,9 +60,9 @@ namespace PokeStar.ImageProcessors
             if (plainText != null)
             {
                int nameEndIndex = Math.Min(plainText.IndexOf('\n'), plainText.IndexOf(' '));
+               string nickname = plainText.Substring(0, nameEndIndex);
                try
                {
-                  string nickname = plainText.Substring(0, nameEndIndex);
                   await user.ModifyAsync(x => { x.Nickname = nickname; });
 
                   await ResponseMessage.SendInfoMessage(context.Channel, $"{user.Username} now has the nickname {nickname}");
@@ -71,7 +71,7 @@ namespace PokeStar.ImageProcessors
                {
                   
                   Console.WriteLine(e.Message);
-                  await ResponseMessage.SendWarningMessage(context.Channel, "Roll image proccessing", $"Unable to set nickname for {user.Username}. Please set your nickname to your in game name in \"{context.Guild.Name}\"");
+                  await ResponseMessage.SendWarningMessage(context.Channel, "Roll image proccessing", $"Unable to set nickname for {user.Username} to {nickname}. Please set your nickname to your in game name in \"{context.Guild.Name}\"");
                }
             }
 
@@ -81,18 +81,18 @@ namespace PokeStar.ImageProcessors
             }
             else
             {
-               SocketRole valor = context.Guild.Roles.FirstOrDefault(x => x.Name.ToString().Equals("Valor", StringComparison.OrdinalIgnoreCase));
-               SocketRole mystic = context.Guild.Roles.FirstOrDefault(x => x.Name.ToString().Equals("Mystic", StringComparison.OrdinalIgnoreCase));
-               SocketRole instinct = context.Guild.Roles.FirstOrDefault(x => x.Name.ToString().Equals("Instinct", StringComparison.OrdinalIgnoreCase));
-               if (user.Roles.FirstOrDefault(x => x.Name.ToString().Equals("Valor", StringComparison.OrdinalIgnoreCase)) != null)
+               SocketRole valor = context.Guild.Roles.FirstOrDefault(x => x.Name.ToString().Equals(Global.ROLE_VALOR, StringComparison.OrdinalIgnoreCase));
+               SocketRole mystic = context.Guild.Roles.FirstOrDefault(x => x.Name.ToString().Equals(Global.ROLE_MYSTIC, StringComparison.OrdinalIgnoreCase));
+               SocketRole instinct = context.Guild.Roles.FirstOrDefault(x => x.Name.ToString().Equals(Global.ROLE_INSTINCT, StringComparison.OrdinalIgnoreCase));
+               if (user.Roles.FirstOrDefault(x => x.Name.ToString().Equals(Global.ROLE_VALOR, StringComparison.OrdinalIgnoreCase)) != null)
                {
                   await user.RemoveRoleAsync(valor);
                }
-               else if (user.Roles.FirstOrDefault(x => x.Name.ToString().Equals("Mystic", StringComparison.OrdinalIgnoreCase)) != null)
+               else if (user.Roles.FirstOrDefault(x => x.Name.ToString().Equals(Global.ROLE_MYSTIC, StringComparison.OrdinalIgnoreCase)) != null)
                {
                   await user.RemoveRoleAsync(mystic);
                }
-               else if (user.Roles.FirstOrDefault(x => x.Name.ToString().Equals("Instinct", StringComparison.OrdinalIgnoreCase)) != null)
+               else if (user.Roles.FirstOrDefault(x => x.Name.ToString().Equals(Global.ROLE_INSTINCT, StringComparison.OrdinalIgnoreCase)) != null)
                {
                   await user.RemoveRoleAsync(instinct);
                }
@@ -100,15 +100,15 @@ namespace PokeStar.ImageProcessors
                string teamName = "";
                if (colorIndex == Global.ROLE_INDEX_VALOR)
                {
-                  teamName = "Valor";
+                  teamName = Global.ROLE_VALOR;
                }
                else if (colorIndex == Global.ROLE_INDEX_MYSTIC)
                {
-                  teamName = "Mystic";
+                  teamName = Global.ROLE_MYSTIC;
                }
                else if (colorIndex == Global.ROLE_INDEX_INSTINCT)
                {
-                  teamName = "Instinct";
+                  teamName = Global.ROLE_INSTINCT;
                }
 
                Discord.IRole team = context.Guild.Roles.FirstOrDefault(x => x.Name.ToString().Equals(teamName, StringComparison.OrdinalIgnoreCase));

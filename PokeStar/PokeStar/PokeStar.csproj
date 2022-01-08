@@ -188,10 +188,11 @@
     <Compile Include="DataModels\CatchSimulation.cs" />
     <Compile Include="DataModels\Evolution.cs" />
     <Compile Include="DataModels\EvolutionNode.cs" />
-    <Compile Include="DataModels\Player.cs" />
+    <Compile Include="DataModels\Profile.cs" />
     <Compile Include="DataModels\POI.cs" />
     <Compile Include="DataModels\LeagueIV.cs" />
     <Compile Include="DataModels\Move.cs" />
+    <Compile Include="DataModels\Region.cs" />
     <Compile Include="DataModels\ResponseMessage.cs" />
     <Compile Include="DataModels\Pokemon.cs" />
     <Compile Include="DataModels\RaidGroup.cs" />
@@ -212,6 +213,7 @@
     <Compile Include="Modules\DexCommands.cs" />
     <Compile Include="Modules\DexUpdateCommands.cs" />
     <Compile Include="Modules\EggCommands.cs" />
+    <Compile Include="Modules\PlayerAccountCommands.cs" />
     <Compile Include="Modules\POICommands.cs" />
     <Compile Include="Modules\HelpCommands.cs" />
     <Compile Include="Modules\JokeCommands.cs" />
@@ -219,6 +221,7 @@
     <Compile Include="Modules\NicknameCommands.cs" />
     <Compile Include="Modules\RaidCommands.cs" />
     <Compile Include="Modules\RaidReplyCommands.cs" />
+    <Compile Include="Modules\RegionCommands.cs" />
     <Compile Include="Modules\RocketCommands.cs" />
     <Compile Include="Modules\RoleCommands.cs" />
     <Compile Include="Modules\SetupCommands.cs" />
@@ -258,6 +261,18 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.2\analyzers\dotnet\cs\Microsoft.CodeAnalysis.VersionCheckAnalyzer.resources.dll" />
+    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.3.3.2\analyzers\dotnet\Microsoft.CodeAnalysis.VersionCheckAnalyzer.dll" />
+    <Analyzer Include="..\packages\Microsoft.CodeQuality.Analyzers.3.3.2\analyzers\dotnet\cs\Humanizer.dll" />
+    <Analyzer Include="..\packages\Microsoft.CodeQuality.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.CodeQuality.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.CodeQuality.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.CodeQuality.CSharp.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.NetCore.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.NetCore.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.NetCore.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.NetCore.CSharp.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.NetFramework.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.NetFramework.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.NetFramework.Analyzers.3.3.2\analyzers\dotnet\cs\Microsoft.NetFramework.CSharp.Analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

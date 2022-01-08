@@ -66,6 +66,8 @@ namespace PokeStar
          int logLevel = Convert.ToInt32(Global.ENV_FILE.GetValue("log_level").ToString());
          Global.LOG_LEVEL = !Enum.IsDefined(typeof(LogSeverity), logLevel) ? DefaultLogLevel : (LogSeverity)logLevel;
 
+         Console.Title = Global.HOME_SERVER;
+
          DiscordSocketConfig clientConfig = new DiscordSocketConfig
          {
             MessageCacheSize = SizeMessageCashe,
@@ -117,6 +119,7 @@ namespace PokeStar
          client.Ready += HandleReady;
          client.JoinedGuild += HandleJoinGuild;
          client.LeftGuild += HandleLeftGuild;
+         client.ChannelDestroyed += HandleChannelDelete;
          return Task.CompletedTask;
       }
 
@@ -228,6 +231,10 @@ namespace PokeStar
             else if (RaidCommandParent.IsRaidGuideMessage(message.Id))
             {
                await RaidCommandParent.RaidGuideMessageReactionHandle(message, reaction);
+            }
+            else if (RaidCommandParent.IsRaidPollMessage(message.Id))
+            {
+               await RaidCommandParent.RaidPollMessageReactionHandle(message, reaction);
             }
             else if (DexCommandParent.IsDexSelectMessage(message.Id))
             {
@@ -414,6 +421,19 @@ namespace PokeStar
       {
          Connections.Instance().DeleteRegistration(guild.Id);
          Connections.Instance().DeleteSettings(guild.Id);
+         return Task.CompletedTask;
+      }
+
+      /// <summary>
+      /// Handles the Channel Destroyed event.
+      /// </summary>
+      /// <param name="channel">Channel that was destroyed.</param>
+      /// <returns>Task Complete.</returns>
+      private Task HandleChannelDelete(SocketChannel channel)
+      {
+         SocketGuildChannel chan = channel as SocketGuildChannel;
+
+         Connections.Instance().DeleteRegistration(chan.Guild.Id, channel.Id);
          return Task.CompletedTask;
       }
 

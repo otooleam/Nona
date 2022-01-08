@@ -63,7 +63,6 @@ namespace PokeStar.Modules
                "Leave blank to get a list of all commands.")]
       public async Task Help([Summary("(Optional) Get help with this command.")] string command = null)
       {
-
          SocketGuildUser user = Context.Guild.Users.FirstOrDefault(x => x.Id == Context.User.Id);
          bool isAdmin = (user.Roles.Where(role => role.Permissions.Administrator).ToList().Count != 0 || Context.Guild.OwnerId == user.Id);
          bool isNona = Context.Guild.Name.Equals(Global.HOME_SERVER, StringComparison.OrdinalIgnoreCase);
@@ -91,14 +90,20 @@ namespace PokeStar.Modules
             msg.AddReactionsAsync(HELP_EMOJIS);
 #endif
          }
-         else if (Global.COMMAND_INFO.FirstOrDefault(x => x.Name.Equals(command, StringComparison.OrdinalIgnoreCase) || x.Aliases.Contains(command)) is CommandInfo cmdInfo
-            && CheckShowCommand(cmdInfo.Name, isAdmin, isNona))
-         {
-            await ReplyAsync(embed: BuildCommandHelpEmbed(cmdInfo, prefix));
-         }
          else
          {
-            await ResponseMessage.SendErrorMessage(Context.Channel, "help", $"Command \'{command}\' does not exist. Run the '.help' command to get a list of valid commands.");
+            List<CommandInfo> cmds = Global.COMMAND_INFO.Where(x => x.Name.Equals(command, StringComparison.OrdinalIgnoreCase) || x.Aliases.Contains(command)).ToList();
+            if (cmds.Count != 0)
+            {
+               foreach (CommandInfo cmdInfo in cmds)
+               {
+                   await ReplyAsync(embed: BuildCommandHelpEmbed(cmdInfo, prefix));
+               }
+            }
+            else
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "help", $"Command \'{command}\' does not exist. Run the '.help' command to get a list of valid commands.");
+            }
          }
       }
 

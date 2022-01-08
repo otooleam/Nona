@@ -98,7 +98,7 @@ namespace PokeStar.ConnectionInterface
          }
          return player_limit;
       }
-      
+
       /// <summary>
       /// Gets the invite limit for raids set for the guild.
       /// </summary>
@@ -221,10 +221,7 @@ namespace PokeStar.ConnectionInterface
             {
                while (reader.Read())
                {
-                  if (reader["Register"].GetType() != typeof(DBNull))
-                  {
-                     registration = Convert.ToString(reader["Register"]);
-                  }
+                  registration = Convert.ToString(reader["Register"]);
                }
             }
             conn.Close();
@@ -397,7 +394,6 @@ namespace PokeStar.ConnectionInterface
       {
 
          string messageID = $@"'{messages}'" ?? "NULL";
-
          string queryString = $@"UPDATE ChannelRegistration 
                                  SET NotifyMessages={messageID}
                                  WHERE GuildID={guild}
@@ -566,7 +562,7 @@ namespace PokeStar.ConnectionInterface
          }
       }
 
-      /// POI *****************************************************************
+      // POI ******************************************************************
 
       /// <summary>
       /// Gets a POI by name.
@@ -812,6 +808,152 @@ namespace PokeStar.ConnectionInterface
          string queryString = $@"DELETE FROM POINickname
                                  WHERE GuildID={guild}
                                  AND Nickname='{nickname}';";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+            conn.Close();
+         }
+      }
+
+      // Profile **************************************************************
+
+      /// <summary>
+      /// Creates an empty profile.
+      /// </summary>
+      /// <param name="account">Id of the account.</param>
+      public void CreateProfile(ulong account)
+      {
+         string queryString = $@"INSERT INTO Profile (UserID, Exp, TrainerCode, ReferalCode, Location)
+                                 VALUES ({account}, -1, 0, NULL, NULL)";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+            conn.Close();
+         }
+      }
+
+      /// <summary>
+      /// Gets a profile.
+      /// </summary>
+      /// <param name="account">Id of the account.</param>
+      /// <returns>Profile if one has been created, otherwise null.</returns>
+      public Profile GetProfile(ulong account)
+      {
+         Profile profile = null;
+         string queryString = $@"SELECT Exp, TrainerCode, ReferalCode, Location 
+                                 FROM Profile 
+                                 WHERE UserID={account};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            using (SqlDataReader reader = new SqlCommand(queryString, conn).ExecuteReader())
+            {
+               while (reader.Read())
+               {
+                  profile = new Profile()
+                  {
+                     Exp = Convert.ToInt32(reader["Exp"]),
+                     TrainerCode = Convert.ToInt64(reader["TrainerCode"]),
+                     ReferalCode = Convert.ToString(reader["ReferalCode"]),
+                     Location = Convert.ToString(reader["Location"])
+                  };
+               }
+            }
+            conn.Close();
+         }
+         return profile;
+      }
+
+      /// <summary>
+      /// Update the total experiance of a profie.
+      /// </summary>
+      /// <param name="account">Id of the account.</param>
+      /// <param name="exp">Total experiance.</param>
+      public void UpdateProfileExp(ulong account, uint exp)
+      {
+         string queryString = $@"UPDATE Profile 
+                                 SET Exp={exp}
+                                 WHERE UserID={account};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+            conn.Close();
+         }
+      }
+
+      /// <summary>
+      /// Update friend code of a profile.
+      /// </summary>
+      /// <param name="account">Id of the account.</param>
+      /// <param name="code">Friend code.</param>
+      public void UpdateFriendCode(ulong account, long code)
+      {
+         string queryString = $@"UPDATE Profile 
+                                 SET TrainerCode={code}
+                                 WHERE UserID={account};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+            conn.Close();
+         }
+      }
+
+      /// <summary>
+      /// Update the referal code of a profile.
+      /// </summary>
+      /// <param name="account">Id of the account.</param>
+      /// <param name="code">Referal Code.</param>
+      public void UpdateReferalCode(ulong account, string code)
+      {
+         string queryString = $@"UPDATE Profile 
+                                 SET ReferalCode='{code}'
+                                 WHERE UserID={account};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+            conn.Close();
+         }
+      }
+
+      /// <summary>
+      /// Update the location of a profile.
+      /// </summary>
+      /// <param name="account">Id of the account.</param>
+      /// <param name="location">Country name.</param>
+      public void UpdateLocation(ulong account, string location)
+      {
+         string queryString = $@"UPDATE Profile 
+                                 SET Location='{location}'
+                                 WHERE UserID={account};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+            conn.Close();
+         }
+      }
+
+      /// <summary>
+      /// Clear the location of a profile.
+      /// </summary>
+      /// <param name="account">Id of the account.</param>
+      public void ClearLocation(ulong account)
+      {
+         string queryString = $@"UPDATE Profile 
+                                 SET Location=NULL
+                                 WHERE UserID={account};";
 
          using (SqlConnection conn = GetConnection())
          {

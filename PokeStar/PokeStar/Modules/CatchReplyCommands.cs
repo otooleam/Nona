@@ -18,13 +18,13 @@ namespace PokeStar.Modules
       /// </summary>
       /// <param name="level">New Pokémon level.</param>
       /// <returns>Completed Task</returns>
-      [Command("level")]
+      [Command("catchLevel")]
       [Summary("Set level of Pokémon.")]
       [Remarks("Level must be between 1 and 35 inclusive." +
                "Must be a reply to a catch message.")]
       [RegisterChannel('I')]
       [CatchReply()]
-      public async Task Level([Summary("New Pokémon level.")] int level)
+      public async Task CatchLevel([Summary("New Pokémon level.")] int level)
       {
          ulong catchMessageId = Context.Message.Reference.MessageId.Value;
          SocketUserMessage catchMessageMessage = (SocketUserMessage)await Context.Channel.GetMessageAsync(catchMessageId);
@@ -42,7 +42,7 @@ namespace PokeStar.Modules
          }
          else
          {
-            await ResponseMessage.SendErrorMessage(Context.Channel, "level", $"Level must be between {Global.MIN_WILD_LEVEL} and {Global.MAX_WILD_LEVEL}");
+            await ResponseMessage.SendErrorMessage(Context.Channel, "catchLevel", $"Level must be between {Global.MIN_WILD_LEVEL} and {Global.MAX_WILD_LEVEL}");
          }
 
          await Context.Message.DeleteAsync();
