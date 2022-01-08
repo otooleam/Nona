@@ -710,6 +710,52 @@ namespace PokeStar.Modules
       }
 
       /// <summary>
+      /// Handle poll command.
+      /// </summary>
+      /// <param name="tier">Tier of the raid.</param>
+      /// <returns>Completed Task.</returns>
+      [Command("poll")]
+      [Alias("raidpoll")]
+      [Summary("Creates a poll to vote for a raid boss.")]
+      [Remarks("Valid Tier values:\n" +
+         "0 (raid with no boss assigned)\n" +
+         "1, common, C\n" +
+         "2, uncommon, U\n" +
+         "3, rare, R\n" +
+         "4, premium, p\n" +
+         "5, legendary, L\n" +
+         "7, mega, M\n")]
+      [RegisterChannel('R')]
+      public async Task Poll([Summary("Tier of the raid bosses.")] string tier)
+      {
+         short calcTier = Global.RAID_TIER_STRING.ContainsKey(tier) ? Global.RAID_TIER_STRING[tier] : Global.INVALID_RAID_TIER;
+         Dictionary<int, List<string>> allBosses = Connections.Instance().GetFullBossList();
+         List<string> potentials = calcTier == Global.INVALID_RAID_TIER || !allBosses.ContainsKey(calcTier) ? new List<string>() : allBosses[calcTier];
+         if (potentials.Count > 1)
+         {
+            string fileName = $"Egg{calcTier}.png";
+            Dictionary<string, int> poll = potentials.ToDictionary(x => x, x => 0);
+
+            Connections.CopyFile(fileName);
+            RestUserMessage selectMsg = await Context.Channel.SendFileAsync(fileName, embed: BuildRaidPollEmbed(poll, fileName, false));
+            pollMessages.Add(selectMsg.Id, poll);
+            Connections.DeleteFile(fileName);
+            List<IEmote> emotes = Global.SELECTION_EMOJIS.Take(potentials.Count).Cast<IEmote>().ToList();
+            emotes.Add(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]);
+            selectMsg.AddReactionsAsync(emotes.ToArray());
+         }
+         else if (potentials.Count == 1)
+         {
+            await ResponseMessage.SendWarningMessage(Context.Channel, "poll", $"The only boss found for tier {tier} is {potentials.First()}");
+         }
+         else
+         {
+            await ResponseMessage.SendErrorMessage(Context.Channel, "poll", $"No raid bosses found for tier {tier}");
+         }
+         RemoveOldRaids();
+      }
+
+      /// <summary>
       /// Handle boss command.
       /// </summary>
       /// <returns>Completed Task.</returns>
