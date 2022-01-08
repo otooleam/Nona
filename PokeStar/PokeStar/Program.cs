@@ -33,6 +33,8 @@ namespace PokeStar
 
       private Timer SilphUpdate;
 
+      private static bool emoteSet = false;
+
       /// <summary>
       /// Main function for the system.
       /// Allows the system to run asyncronously.
@@ -63,6 +65,8 @@ namespace PokeStar
 
          int logLevel = Convert.ToInt32(Global.ENV_FILE.GetValue("log_level").ToString());
          Global.LOG_LEVEL = !Enum.IsDefined(typeof(LogSeverity), logLevel) ? DefaultLogLevel : (LogSeverity)logLevel;
+
+         Console.Title = Global.HOME_SERVER;
 
          DiscordSocketConfig clientConfig = new DiscordSocketConfig
          {
@@ -143,7 +147,8 @@ namespace PokeStar
       /// <returns>Task Complete.</returns>
       private async Task<Task> HandleCommandAsync(SocketMessage cmdMessage)
       {
-         if (!(cmdMessage is SocketUserMessage message) ||
+         if (!Global.INIT_COMPLETE ||
+            !(cmdMessage is SocketUserMessage message) ||
              (message.Author.IsBot &&
              (!Global.USE_NONA_TEST || !message.Author.Username.Equals("NonaTest", StringComparison.OrdinalIgnoreCase)))
              || cmdMessage.Channel is IPrivateChannel)
@@ -188,9 +193,16 @@ namespace PokeStar
       private async Task<Task> HandleReactionAdded(Cacheable<IUserMessage, ulong> cachedMessage,
           Cacheable<IMessageChannel, ulong> originChannel, SocketReaction reaction)
       {
-         IMessage message = await reaction.Channel.GetMessageAsync(cachedMessage.Id);
+         ISocketMessageChannel channel = reaction.Channel ?? (ISocketMessageChannel)FindChannel(originChannel.Id);
 
-         SocketGuildChannel chnl = message.Channel as SocketGuildChannel;
+         if (channel == null)
+         {
+            return Task.CompletedTask;
+         }
+
+         IMessage message = await channel.GetMessageAsync(cachedMessage.Id);
+
+         SocketGuildChannel chnl = channel as SocketGuildChannel;
          ulong guild = chnl.Guild.Id;
 
          IUser user = reaction.User.Value;
@@ -208,6 +220,10 @@ namespace PokeStar
             else if (RaidCommandParent.IsRaidGuideMessage(message.Id))
             {
                await RaidCommandParent.RaidGuideMessageReactionHandle(message, reaction);
+            }
+            else if (RaidCommandParent.IsRaidPollMessage(message.Id))
+            {
+               await RaidCommandParent.RaidPollMessageReactionHandle(message, reaction);
             }
             else if (DexCommandParent.IsDexSelectMessage(message.Id))
             {
@@ -318,32 +334,54 @@ namespace PokeStar
       /// <param name="server">Server that the emotes are on.</param>
       private static void SetEmotes(SocketGuild server)
       {
-         List<string> nonaEmojiKeys = Global.NONA_EMOJIS.Keys.ToList();
-         foreach (string emote in nonaEmojiKeys)
+         if (!emoteSet)
          {
-            Global.NONA_EMOJIS[emote] = Emote.Parse(
-               server.Emotes.FirstOrDefault(
-                  x => x.Name.Equals(
-                     Global.NONA_EMOJIS[emote],
-                     StringComparison.OrdinalIgnoreCase)
-                  ).ToString()).ToString();
-         }
+            List<string> nonaEmojiKeys = Global.NONA_EMOJIS.Keys.ToList();
+            foreach (string emote in nonaEmojiKeys)
+            {
+               Global.NONA_EMOJIS[emote] = Emote.Parse(
+                  server.Emotes.FirstOrDefault(
+                     x => x.Name.Equals(
+                        Global.NONA_EMOJIS[emote],
+                        StringComparison.OrdinalIgnoreCase)
+                     ).ToString()).ToString();
+            }
 
-         List<string> noumEmojiKeys = Global.NUM_EMOJI_NAMES.Keys.ToList();
-         foreach (string emote in noumEmojiKeys)
-         {
-            Global.NUM_EMOJIS.Add(Emote.Parse(
-               server.Emotes.FirstOrDefault(
-                  x => x.Name.Equals(
-                     Global.NUM_EMOJI_NAMES[emote],
-                     StringComparison.OrdinalIgnoreCase)
-                  ).ToString()));
-         }
+            List<string> noumEmojiKeys = Global.NUM_EMOJI_NAMES.Keys.ToList();
+            foreach (string emote in noumEmojiKeys)
+            {
+               Global.NUM_EMOJIS.Add(Emote.Parse(
+                  server.Emotes.FirstOrDefault(
+                     x => x.Name.Equals(
+                        Global.NUM_EMOJI_NAMES[emote],
+                        StringComparison.OrdinalIgnoreCase)
+                     ).ToString()));
+            }
 
-         for (int i = 0; i < Global.NUM_SELECTIONS; i++)
-         {
-            Global.SELECTION_EMOJIS[i] = Global.NUM_EMOJIS[i];
+            for (int i = 0; i < Global.NUM_SELECTIONS; i++)
+            {
+               Global.SELECTION_EMOJIS[i] = Global.NUM_EMOJIS[i];
+            }
+            emoteSet = true;
          }
+      }
+
+      /// <summary>
+      /// Finds a channel in a guild by id.
+      /// </summary>
+      /// <param name="id">Id of the channel.</param>
+      /// <returns>Channel if it exists, otherwise null.</returns>
+      private static SocketGuildChannel FindChannel(ulong id)
+      {
+         foreach (SocketGuild guild in client.Guilds)
+         {
+            SocketGuildChannel channel = guild.Channels.FirstOrDefault(x => x.Id == id);
+            if (channel != null)
+            {
+               return channel;
+            }
+         }
+         return null;
       }
 
       /// <summary>

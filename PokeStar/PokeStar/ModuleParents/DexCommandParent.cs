@@ -835,18 +835,26 @@ namespace PokeStar.ModuleParents
          // Galarian
          else if (form.Equals("-galar", StringComparison.OrdinalIgnoreCase) || form.Equals("-galarian", StringComparison.OrdinalIgnoreCase))
             return $"Galarian {pokemonName}";
-         // Mega
+         // Mega and Primal
+         else if ((form.Equals("-mega", StringComparison.OrdinalIgnoreCase) || form.Equals("-primal", StringComparison.OrdinalIgnoreCase)) && (pokemonName.Equals("kyogre", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("groudon", StringComparison.OrdinalIgnoreCase)))
+            return $"Primal {pokemonName}";
          else if (form.Equals("-megay", StringComparison.OrdinalIgnoreCase) || form.Equals("-mega-y", StringComparison.OrdinalIgnoreCase) || (form.Equals("-mega", StringComparison.OrdinalIgnoreCase) && (pokemonName.Equals("charizard", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("mewtwo", StringComparison.OrdinalIgnoreCase))))
             return $"Mega {pokemonName} Y";
          else if (form.Equals("-megax", StringComparison.OrdinalIgnoreCase) || form.Equals("-mega-x", StringComparison.OrdinalIgnoreCase))
             return $"Mega {pokemonName} X";
          else if (form.Equals("-mega", StringComparison.OrdinalIgnoreCase))
             return $"Mega {pokemonName}";
+         // Gigantamax and Eternamax
+         else if (form.Equals("-max", StringComparison.OrdinalIgnoreCase))
+            if (pokemonName.Equals("eternatus", StringComparison.OrdinalIgnoreCase))
+               return $"Eternamax {pokemonName}";
+            else
+               return $"Gigantamax {pokemonName}";
          // Gender
-         else if (form.Equals("-male", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && (pokemonName.Equals("nidoran", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("pyroar", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("meowstic", StringComparison.OrdinalIgnoreCase))))
+         else if (form.Equals("-male", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && (pokemonName.Equals("nidoran", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("pyroar", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("meowstic", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("indeedee", StringComparison.OrdinalIgnoreCase))))
             return $"{pokemonName} M";
          // Unown and Gender
-         else if ((string.IsNullOrWhiteSpace(form) && pokemonName.Equals("unown", StringComparison.OrdinalIgnoreCase)) || form.Equals("-female", StringComparison.OrdinalIgnoreCase))
+         else if (form.Equals("-female", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} F";
          // Mewtwo
          else if (form.Equals("-armor", StringComparison.OrdinalIgnoreCase) || form.Equals("-armored", StringComparison.OrdinalIgnoreCase))
@@ -903,8 +911,8 @@ namespace PokeStar.ModuleParents
             return $"Land Form {pokemonName}";
          else if (form.Equals("-sky", StringComparison.OrdinalIgnoreCase))
             return $"Sky Form {pokemonName}";
-         // Arceus
-         else if (form.Equals("-normal", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("arceus", StringComparison.OrdinalIgnoreCase)))
+         // Arceus, Silvally, and Calyrex
+         else if (form.Equals("-normal", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && (pokemonName.Equals("arceus", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("silvally", StringComparison.OrdinalIgnoreCase))))
             return $"{pokemonName} Normal";
          else if (form.Equals("-bug", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Bug";
@@ -916,11 +924,11 @@ namespace PokeStar.ModuleParents
             return $"{pokemonName} Electric";
          else if (form.Equals("-fairy", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Fairy";
-         else if (form.Equals("-fighting", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("-fight", StringComparison.OrdinalIgnoreCase))
+         else if (form.Equals("-fighting", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Fighting";
          else if (form.Equals("-fire", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Fire";
-         else if (form.Equals("-flying", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("-fly", StringComparison.OrdinalIgnoreCase))
+         else if (form.Equals("-flying", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Flying";
          else if (form.Equals("-ghost", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Ghost";
@@ -928,11 +936,9 @@ namespace PokeStar.ModuleParents
             return $"{pokemonName} Grass";
          else if (form.Equals("-ground", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Ground";
-         else if (form.Equals("-ice", StringComparison.OrdinalIgnoreCase))
-            return $"{pokemonName} Ice";
          else if (form.Equals("-poison", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Poison";
-         else if (form.Equals("-psychic", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("-psy", StringComparison.OrdinalIgnoreCase))
+         else if (form.Equals("-psychic", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Psychic";
          else if (form.Equals("-rock", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Rock";
@@ -940,11 +946,13 @@ namespace PokeStar.ModuleParents
             return $"{pokemonName} Steel";
          else if (form.Equals("-water", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Water";
-         // Basculin
-         else if (form.Equals("-blue", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("basculin", StringComparison.OrdinalIgnoreCase)))
-            return $"Blue Striped {pokemonName}";
-         else if (form.Equals("-red", StringComparison.OrdinalIgnoreCase))
-            return $"Red Striped {pokemonName}";
+         else if (form.Equals("-ice", StringComparison.OrdinalIgnoreCase))
+            if (pokemonName.Equals("calyrex", StringComparison.OrdinalIgnoreCase))
+               return $"Ice Rider {pokemonName}";
+            else
+               return $"{pokemonName} Ice";
+         else if (form.Equals("-shadow", StringComparison.OrdinalIgnoreCase))
+            return $"Shadow Rider {pokemonName}";
          // Darmanitan
          else if (form.Equals("-zen", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Zen Mode";
@@ -986,6 +994,86 @@ namespace PokeStar.ModuleParents
             return $"Douse Drive {pokemonName}";
          else if (form.Equals("-shock", StringComparison.OrdinalIgnoreCase))
             return $"Shock Drive {pokemonName}";
+         // Vivillon
+         else if (form.Equals("-poke", StringComparison.OrdinalIgnoreCase) || form.Equals("-poke-ball", StringComparison.OrdinalIgnoreCase) || form.Equals("-pokeball", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("vivillon", StringComparison.OrdinalIgnoreCase)))
+            return $"{pokemonName} Poke Ball Pattern";
+         else if (form.Equals("-fancy", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Fancy Pattern";
+         else if (form.Equals("-archipelago", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Archipelago Pattern";
+         else if (form.Equals("-continental", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Continental Pattern";
+         else if (form.Equals("-elegant", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Elegant Pattern";
+         else if (form.Equals("-garden", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Garden Pattern";
+         else if (form.Equals("-plains", StringComparison.OrdinalIgnoreCase) || form.Equals("-high-plains", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} High Plains Pattern";
+         else if (form.Equals("-icy", StringComparison.OrdinalIgnoreCase) || form.Equals("-icy-snow", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Icy Snow Pattern";
+         else if (form.Equals("-jungle", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Jungle Pattern";
+         else if (form.Equals("-marine", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Marine Pattern";
+         else if (form.Equals("-meadow", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Meadow Pattern";
+         else if (form.Equals("-modern", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Modern Pattern";
+         else if (form.Equals("-monsoon", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Monsoon Pattern";
+         else if (form.Equals("-ocean", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Ocean Pattern";
+         else if (form.Equals("-polar", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Polar Pattern";
+         else if (form.Equals("-river", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} River Pattern";
+         else if (form.Equals("-sandstorm", StringComparison.OrdinalIgnoreCase) || form.Equals("-sand", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Sandstorm Pattern";
+         else if (form.Equals("-savanna", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Savanna Pattern";
+         else if (form.Equals("-sun", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Sun Pattern";
+         else if (form.Equals("-tundra", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Tundra Pattern";
+         // Basculin, Flabébé, Floette, Florges and Minior
+         else if (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("basculin", StringComparison.OrdinalIgnoreCase))
+            return $"Blue Striped {pokemonName}";
+         else if (string.IsNullOrWhiteSpace(form) && (pokemonName.Equals("flabebe", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("floette", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("florges", StringComparison.OrdinalIgnoreCase)))
+            return $"Red Flower {pokemonName}";
+         else if (form.Equals("-meteor", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("minior", StringComparison.OrdinalIgnoreCase)))
+            return "Minior Meteor Core";
+         else if (form.Equals("-red", StringComparison.OrdinalIgnoreCase))
+            if (pokemonName.Equals("basculin", StringComparison.OrdinalIgnoreCase))
+               return $"Blue Striped {pokemonName}";
+            else if (pokemonName.Equals("minior", StringComparison.OrdinalIgnoreCase))
+               return $"{pokemonName} Red Core";
+            else
+               return $"Red Flower {pokemonName}";
+         else if (form.Equals("-blue", StringComparison.OrdinalIgnoreCase))
+            if (pokemonName.Equals("basculin", StringComparison.OrdinalIgnoreCase))
+               return $"Blue Striped {pokemonName}";
+            else if (pokemonName.Equals("minior", StringComparison.OrdinalIgnoreCase))
+               return $"{pokemonName} Blue Core";
+            else
+               return $"Blue Flower {pokemonName}";
+         else if (form.Equals("-orange", StringComparison.OrdinalIgnoreCase))
+            if (pokemonName.Equals("minior", StringComparison.OrdinalIgnoreCase))
+               return $"{pokemonName} Orange Core";
+            else
+               return $"Orange Flower {pokemonName}";
+         else if (form.Equals("-yellow", StringComparison.OrdinalIgnoreCase))
+            if (pokemonName.Equals("minior", StringComparison.OrdinalIgnoreCase))
+               return $"{pokemonName} Yellow Core";
+            else
+               return $"Yellow Flower {pokemonName}";
+         else if (form.Equals("-green", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Green Core";
+         else if (form.Equals("-indigo", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Indigo Core";
+         else if (form.Equals("-violet", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Violet Core";
+         else if (form.Equals("-white", StringComparison.OrdinalIgnoreCase))
+            return $"White Flower {pokemonName}";
          // Furfrou
          else if (form.Equals("-heart", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Heart Trim";
@@ -1005,6 +1093,15 @@ namespace PokeStar.ModuleParents
             return $"{pokemonName} Kabuki Trim";
          else if (form.Equals("-pharaoh", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Pharaoh Trim";
+         // Pumpkaboo and Gourgeist
+         else if (form.Equals("-average", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && (pokemonName.Equals("pumpkaboo", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("gourgeist", StringComparison.OrdinalIgnoreCase))))
+            return $"{pokemonName} Average Size";
+         else if (form.Equals("-small", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Small Size";
+         else if (form.Equals("-large", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Large Size";
+         else if (form.Equals("-super", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Super Size";
          // Aegislash
          else if (form.Equals("-blade", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("aegislash", StringComparison.OrdinalIgnoreCase)))
             return $"{pokemonName} Blade Form";
@@ -1022,7 +1119,223 @@ namespace PokeStar.ModuleParents
             return $"{pokemonName} 10% Form";
          else if (form.Equals("-complete", StringComparison.OrdinalIgnoreCase))
             return $"{pokemonName} Complete Form";
-
+         // Oricorio
+         else if (form.Equals("-baile", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("oricorio", StringComparison.OrdinalIgnoreCase)))
+            return $"{pokemonName} Baile Style";
+         else if (form.Equals("-pom", StringComparison.OrdinalIgnoreCase) || form.Equals("-pom-pom", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Pom-Pom Style";
+         else if (form.Equals("-pau", StringComparison.OrdinalIgnoreCase) || form.Equals("-pa\'u", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Pa\'u Style Form";
+         else if (form.Equals("-sensu", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Sensu Style Form";
+         // Lycanroc
+         else if (form.Equals("-midday", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("lycanroc", StringComparison.OrdinalIgnoreCase)))
+            return $"Midday {pokemonName}";
+         else if (form.Equals("-dusk", StringComparison.OrdinalIgnoreCase))
+            return $"Dusk {pokemonName}";
+         else if (form.Equals("-midnight", StringComparison.OrdinalIgnoreCase))
+            return $"Midnight {pokemonName}";
+         // Wishiwashi
+         else if (form.Equals("-solo", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("wishiwashi", StringComparison.OrdinalIgnoreCase)))
+            return $"{pokemonName} Solo";
+         else if (form.Equals("-school", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} School";
+         // Mimikyu
+         else if (form.Equals("-busted", StringComparison.OrdinalIgnoreCase))
+            return $"Busted {pokemonName}";
+         // Solgaleo
+         else if (form.Equals("-radiant", StringComparison.OrdinalIgnoreCase) || form.Equals("-radiant-sun", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Radiant Sun Phase";
+         // Lunala
+         else if (form.Equals("-full", StringComparison.OrdinalIgnoreCase) || form.Equals("-full-moon", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Full Moon Phase";
+         // Necrozma
+         else if (form.Equals("-dawn", StringComparison.OrdinalIgnoreCase) || form.Equals("-dawn-wings", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Dawn Wings";
+         else if (form.Equals("-dusk", StringComparison.OrdinalIgnoreCase) || form.Equals("-dusk-mane", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Dusk Mane";
+         else if (form.Equals("-ultra", StringComparison.OrdinalIgnoreCase))
+            return $"Ultra {pokemonName}";
+         // Magearna
+         else if (form.Equals("-original", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Original";
+         // Marshadow
+         else if (form.Equals("-zenith", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Zenith";
+         // Cramorant
+         else if (form.Equals("-gorge", StringComparison.OrdinalIgnoreCase) || form.Equals("-gorging", StringComparison.OrdinalIgnoreCase))
+            return $"Gulping {pokemonName}";
+         else if (form.Equals("-gulp", StringComparison.OrdinalIgnoreCase) || form.Equals("-gulping", StringComparison.OrdinalIgnoreCase))
+            return $"Gorging {pokemonName}";
+         // Toxtricity
+         else if (form.Equals("-amped", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("toxtricity", StringComparison.OrdinalIgnoreCase)))
+            return $"Amped {pokemonName}";
+         else if (form.Equals("-low", StringComparison.OrdinalIgnoreCase) || form.Equals("-low-key", StringComparison.OrdinalIgnoreCase) || form.Equals("-lowkey", StringComparison.OrdinalIgnoreCase))
+            return $"Low Key {pokemonName}";
+         // Sinistea and Polteageist
+         else if (form.Equals("-phony", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && (pokemonName.Equals("sinistea", StringComparison.OrdinalIgnoreCase) || pokemonName.Equals("polteageist", StringComparison.OrdinalIgnoreCase))))
+            return $"Phony {pokemonName}";
+         else if (form.Equals("-antique", StringComparison.OrdinalIgnoreCase))
+            return $"Antique {pokemonName}";
+         //Alcremie
+         else if (form.Equals("-vanilla-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-vanilla", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("Alcremie", StringComparison.OrdinalIgnoreCase)))
+            return $"Strawberry Sweet Vanilla Cream {pokemonName}";
+         else if (form.Equals("-vanilla-berry", StringComparison.OrdinalIgnoreCase) || form.Equals("-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Vanilla Cream {pokemonName}";
+         else if (form.Equals("-vanilla-clover", StringComparison.OrdinalIgnoreCase) || form.Equals("-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Vanilla Cream {pokemonName}";
+         else if (form.Equals("-vanilla-flower", StringComparison.OrdinalIgnoreCase) || form.Equals("-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Vanilla Cream {pokemonName}";
+         else if (form.Equals("-vanilla-love", StringComparison.OrdinalIgnoreCase) || form.Equals("-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Vanilla Cream {pokemonName}";
+         else if (form.Equals("-vanilla-ribbon", StringComparison.OrdinalIgnoreCase) || form.Equals("-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Vanilla Cream {pokemonName}";
+         else if (form.Equals("-vanilla-star", StringComparison.OrdinalIgnoreCase) || form.Equals("-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Vanilla Cream {pokemonName}";
+         else if (form.Equals("-caramel-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-caramel", StringComparison.OrdinalIgnoreCase))
+            return $"Strawberry Sweet Caramel Swirl {pokemonName}";
+         else if (form.Equals("-caramel-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Caramel Swirl {pokemonName}";
+         else if (form.Equals("-caramel-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Caramel Swirl {pokemonName}";
+         else if (form.Equals("-caramel-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Caramel Swirl {pokemonName}";
+         else if (form.Equals("-caramel-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Caramel Swirl {pokemonName}";
+         else if (form.Equals("-caramel-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Caramel Swirl {pokemonName}";
+         else if (form.Equals("-caramel-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Caramel Swirl {pokemonName}";
+         else if (form.Equals("-rubyc-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-c-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-rubyc", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-c", StringComparison.OrdinalIgnoreCase))
+            return $"Strawberry Sweet Ruby Cream {pokemonName}";
+         else if (form.Equals("-rubyc-berry", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-c-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Ruby Cream {pokemonName}";
+         else if (form.Equals("-rubyc-clover", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-c-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Ruby Cream {pokemonName}";
+         else if (form.Equals("-rubyc-flower", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-c-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Ruby Cream {pokemonName}";
+         else if (form.Equals("-rubyc-love", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-c-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Ruby Cream {pokemonName}";
+         else if (form.Equals("-rubyc-ribbon", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-c-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Ruby Cream {pokemonName}";
+         else if (form.Equals("-rubyc-star", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-c-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Ruby Cream {pokemonName}";
+         else if (form.Equals("-rubys-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-s-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-rubys", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-s", StringComparison.OrdinalIgnoreCase))
+            return $"Strawberry Sweet Ruby Swirl {pokemonName}";
+         else if (form.Equals("-rubys-berry", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-s-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Ruby Swirl {pokemonName}";
+         else if (form.Equals("-rubys-clover", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-s-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Ruby Swirl {pokemonName}";
+         else if (form.Equals("-rubys-flower", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-s-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Ruby Swirl {pokemonName}";
+         else if (form.Equals("-rubys-love", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-s-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Ruby Swirl {pokemonName}";
+         else if (form.Equals("-rubys-ribbon", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-s-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Ruby Swirl {pokemonName}";
+         else if (form.Equals("-rubys-star", StringComparison.OrdinalIgnoreCase) || form.Equals("-ruby-s-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Ruby Swirl {pokemonName}";
+         else if (form.Equals("-matcha-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-matcha", StringComparison.OrdinalIgnoreCase))
+            return $"Strawberry Sweet Matcha Cream {pokemonName}";
+         else if (form.Equals("-matcha-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Matcha Cream {pokemonName}";
+         else if (form.Equals("-matcha-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Matcha Cream {pokemonName}";
+         else if (form.Equals("-matcha-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Matcha Cream {pokemonName}";
+         else if (form.Equals("-matcha-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Matcha Cream {pokemonName}";
+         else if (form.Equals("-matcha-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Matcha Cream {pokemonName}";
+         else if (form.Equals("-matcha-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Matcha Cream {pokemonName}";
+         else if (form.Equals("-lemon-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-lemon", StringComparison.OrdinalIgnoreCase))
+            return $"Strawberry Sweet Lemon Cream {pokemonName}";
+         else if (form.Equals("-lemon-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Lemon Cream {pokemonName}";
+         else if (form.Equals("-lemon-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Lemon Cream {pokemonName}";
+         else if (form.Equals("-lemon-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Lemon Cream {pokemonName}";
+         else if (form.Equals("-lemon-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Lemon Cream {pokemonName}";
+         else if (form.Equals("-lemon-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Lemon Cream {pokemonName}";
+         else if (form.Equals("-lemon-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Lemon Cream {pokemonName}";
+         else if (form.Equals("-salted-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-salt-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-salted", StringComparison.OrdinalIgnoreCase) || form.Equals("-salt", StringComparison.OrdinalIgnoreCase))
+            return $"Strawberry Sweet Salted Cream {pokemonName}";
+         else if (form.Equals("-salted-berry", StringComparison.OrdinalIgnoreCase) || form.Equals("-salt-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Salted Cream {pokemonName}";
+         else if (form.Equals("-salted-clover", StringComparison.OrdinalIgnoreCase) || form.Equals("-salt-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Salted Cream {pokemonName}";
+         else if (form.Equals("-salted-flower", StringComparison.OrdinalIgnoreCase) || form.Equals("-salt-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Salted Cream {pokemonName}";
+         else if (form.Equals("-salted-love", StringComparison.OrdinalIgnoreCase) || form.Equals("-salt-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Salted Cream {pokemonName}";
+         else if (form.Equals("-salted-ribbon", StringComparison.OrdinalIgnoreCase) || form.Equals("-salt-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Salted Cream {pokemonName}";
+         else if (form.Equals("-salted-star", StringComparison.OrdinalIgnoreCase) || form.Equals("-salt-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Salted Cream {pokemonName}";
+         else if (form.Equals("-mint-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-mint", StringComparison.OrdinalIgnoreCase))
+            return $"Strawberry Sweet Mint Cream {pokemonName}";
+         else if (form.Equals("-mint-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Mint Cream {pokemonName}";
+         else if (form.Equals("-mint-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Mint Cream {pokemonName}";
+         else if (form.Equals("-mint-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Mint Cream {pokemonName}";
+         else if (form.Equals("-mint-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Mint Cream {pokemonName}";
+         else if (form.Equals("-mint-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Mint Cream {pokemonName}";
+         else if (form.Equals("-mint-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Mint Cream {pokemonName}";
+         else if (form.Equals("-rainbow-strawberry", StringComparison.OrdinalIgnoreCase) || form.Equals("-rainbow", StringComparison.OrdinalIgnoreCase))
+            return $"Strawberry Sweet Rainbow Swirl {pokemonName}";
+         else if (form.Equals("-rainbow-berry", StringComparison.OrdinalIgnoreCase))
+            return $"Berry Sweet Rainbow Swirl {pokemonName}";
+         else if (form.Equals("-rainbow-clover", StringComparison.OrdinalIgnoreCase))
+            return $"Clover Sweet Rainbow Swirl {pokemonName}";
+         else if (form.Equals("-rainbow-flower", StringComparison.OrdinalIgnoreCase))
+            return $"Flower Sweet Rainbow Swirl {pokemonName}";
+         else if (form.Equals("-rainbow-love", StringComparison.OrdinalIgnoreCase))
+            return $"Love Sweet Rainbow Swirl {pokemonName}";
+         else if (form.Equals("-rainbow-ribbon", StringComparison.OrdinalIgnoreCase))
+            return $"Ribbon Sweet Rainbow Swirl {pokemonName}";
+         else if (form.Equals("-rainbow-star", StringComparison.OrdinalIgnoreCase))
+            return $"Star Sweet Rainbow Swirl {pokemonName}";
+         // Eiscue
+         else if (form.Equals("-ice", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("eiscue", StringComparison.OrdinalIgnoreCase)))
+            return $"Ice Face {pokemonName}";
+         else if (form.Equals("-noice", StringComparison.OrdinalIgnoreCase))
+            return $"Noice Face {pokemonName}";
+         // Morpeko
+         else if (form.Equals("-full", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("morpeko", StringComparison.OrdinalIgnoreCase)))
+            return $"{pokemonName} Full Belly Mode";
+         else if (form.Equals("-hangry", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Hangry Mode";
+         // Zacian and Zamazenta
+         else if (form.Equals("-hero", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Hero of Many Battles";
+         else if (form.Equals("-crown", StringComparison.OrdinalIgnoreCase) || form.Equals("-crowned", StringComparison.OrdinalIgnoreCase))
+            if (pokemonName.Equals("zacian", StringComparison.OrdinalIgnoreCase))
+               return $"{pokemonName} Crowned Sword";
+            else if (pokemonName.Equals("zamazenta", StringComparison.OrdinalIgnoreCase))
+               return $"{pokemonName} Crowned Shield";
+            else
+               return $"Crown {pokemonName}";
+         else if (form.Equals("-sword", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("zacian", StringComparison.OrdinalIgnoreCase)))
+            return $"{pokemonName} Crowned Sword";
+         else if (form.Equals("-shield", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("zamazenta", StringComparison.OrdinalIgnoreCase)))
+            return $"{pokemonName} Crowned Shield";
+         // Urshifu
+         else if (form.Equals("-single", StringComparison.OrdinalIgnoreCase) || (string.IsNullOrWhiteSpace(form) && pokemonName.Equals("urshifu", StringComparison.OrdinalIgnoreCase)))
+            return $"{pokemonName} Single Strike Style";
+         else if (form.Equals("-rapid", StringComparison.OrdinalIgnoreCase))
+            return $"{pokemonName} Rapid Strike Style";
+         // Zarude
+         else if (form.Equals("-dada", StringComparison.OrdinalIgnoreCase))
+            return $"Dada {pokemonName}";
          return pokemonName;
       }
 
@@ -1126,7 +1439,7 @@ namespace PokeStar.ModuleParents
          return evolutions;
       }
 
-      // Type processors *************************************************
+      // Type processors ******************************************************
 
       /// <summary>
       /// Formats weather boosts as a string.
@@ -1172,7 +1485,19 @@ namespace PokeStar.ModuleParents
       /// <returns>True if the type is valid, otherwise false.</returns>
       protected static bool CheckValidType(string type)
       {
-         return Global.NONA_EMOJIS.ContainsKey($"{type}_emote");
+         return Global.TYPE.Contains(type, StringComparer.OrdinalIgnoreCase);
+      }
+
+      // Region processors ****************************************************
+
+      /// <summary>
+      /// Checks if a region is valid.
+      /// </summary>
+      /// <param name="region">Region to check.</param>
+      /// <returns>True if the region is valid, otherwise false.</returns>
+      protected static bool CheckValidRegion(string region)
+      {
+         return Global.REGION.Contains(region, StringComparer.OrdinalIgnoreCase);
       }
 
       // Message senders ******************************************************

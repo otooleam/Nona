@@ -77,6 +77,8 @@ namespace PokeStar
       /// </summary>
       public static bool USE_EMPTY_RAID { get; set; }
 
+      public static bool INIT_COMPLETE { get; set; } = false;
+
       // Help command hidding *************************************************
 
       /// <summary>
@@ -478,6 +480,31 @@ namespace PokeStar
       /// </summary>
       public const double TYPE_COEFFICIENT = 1.6;
 
+      /// <summary>
+      /// List of Pokémon types.
+      /// </summary>
+      public static List<string> TYPE = new List<string>
+      {
+         "Bug",
+         "Dark",
+         "Dragon",
+         "Electric",
+         "Fairy",
+         "Fighting",
+         "Fire",
+         "Flying",
+         "Ghost",
+         "Grass",
+         "Ground",
+         "Ice",
+         "Normal",
+         "Poison",
+         "Psychic",
+         "Rock",
+         "Steel",
+         "Water",
+      };
+
       // Dex switch options ***************************************************
 
       /// <summary>
@@ -807,6 +834,23 @@ namespace PokeStar
          ["7 KM"]  = EGG_TIER_7KM,
          ["12"]    = EGG_TIER_12KM,
          ["12 KM"] = EGG_TIER_12KM,
+      };
+
+      // Region values ********************************************************
+
+      /// <summary>
+      /// List of Region Names.
+      /// </summary>
+      public static List<string> REGION = new List<string>
+      {
+         "Kanto",
+         "Johto",
+         "Hoenn",
+         "Sinnoh",
+         "Unova",
+         "Kalos",
+         "Alola",
+         "Galar",
       };
 
       // Channel register values **********************************************

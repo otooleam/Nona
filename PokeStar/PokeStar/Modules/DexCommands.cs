@@ -339,8 +339,7 @@ namespace PokeStar.Modules
       [Summary("Gets all forms for a given Pokémon.")]
       [Remarks("Can search by Pokémon name or by number." +
                "Tags can be used to search for specific forms.\n" +
-               "Leave blank to get a list of all Pokémon with forms.\n" +
-               "Send \"Alias\" to get variations for form names.")]
+               "Leave blank to get a list of all Pokémon with forms.\n")]
       [RegisterChannel('D')]
       public async Task Form([Summary("(Optional) Get form information for this Pokémon.")][Remainder] string pokemon = null)
       {
@@ -360,25 +359,6 @@ namespace PokeStar.Modules
 
             EmbedBuilder embed = new EmbedBuilder();
             embed.AddField($"Pokémon with form differences:", sb.ToString());
-            embed.WithColor(Global.EMBED_COLOR_DEX_RESPONSE);
-            await ReplyAsync(embed: embed.Build());
-         }
-         else if (pokemon.Equals("Alias", StringComparison.OrdinalIgnoreCase))
-         {
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.WithTitle("Form tag variations");
-            embed.AddField($"-alola", "-alolan", true);
-            embed.AddField($"-galar", "-garlarian", true);
-            embed.AddField($"-armor", "-armored", true);
-            embed.AddField($"-fighting", "-fight", true);
-            embed.AddField($"-flying", "-fly", true);
-            embed.AddField($"-psychic", "-psy", true);
-            embed.AddField($"-galar-zen", "-garlarian-zen", true);
-            embed.AddField($"-autumn", "-fall", true);
-            embed.AddField($"-megax", "-mega-x, -x", true);
-            embed.AddField($"-megay", "-mega-y, -y", true);
-            embed.AddField($"-male", "-m", true);
-            embed.AddField($"-female", "-f", true);
             embed.WithColor(Global.EMBED_COLOR_DEX_RESPONSE);
             await ReplyAsync(embed: embed.Build());
          }

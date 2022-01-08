@@ -37,6 +37,9 @@ namespace PokeStar.ConnectionInterface
       /// </summary>
       private const string HTML_TAG_PATTERN = "<.*?>";
 
+      /// <summary>
+      /// ID of silph nicknames.
+      /// </summary>
       private const int SILPH_GUILD_NUM = 0;
 
       /// <summary>
@@ -49,9 +52,13 @@ namespace PokeStar.ConnectionInterface
       public static Dictionary<int, List<string>> GetRaidBosses()
       {
          int tier = int.MinValue;
-         HtmlWeb web = new HtmlWeb();
-         HtmlDocument doc = web.Load(RaidBossUrl);
-         HtmlNodeCollection bosses = doc.DocumentNode.SelectNodes(RaidBossHTMLPattern);
+
+         HtmlNodeCollection bosses = GetNodes(RaidBossUrl, RaidBossHTMLPattern);
+
+         if (bosses == null)
+         {
+            return null;
+         }
 
          Dictionary<int, List<string>> raidBossList = new Dictionary<int, List<string>>();
 
@@ -89,9 +96,12 @@ namespace PokeStar.ConnectionInterface
       /// <returns>True if all bosses are confirmed, otherwise false.</returns>
       public static bool GetRaidBossesConfirmed()
       {
-         HtmlWeb web = new HtmlWeb();
-         HtmlDocument doc = web.Load(RaidBossUrl);
-         HtmlNodeCollection bosses = doc.DocumentNode.SelectNodes(RaidBossHTMLPattern);
+         HtmlNodeCollection bosses = GetNodes(RaidBossUrl, RaidBossHTMLPattern);
+
+         if (bosses == null)
+         {
+            return false;
+         }
 
          foreach (HtmlNode col in bosses)
          {
@@ -116,9 +126,13 @@ namespace PokeStar.ConnectionInterface
       public static Dictionary<string, int> GetRaidBossDifficulty(string bossName)
       {
          bool bossFound = false;
-         HtmlWeb web = new HtmlWeb();
-         HtmlDocument doc = web.Load(RaidBossUrl);
-         HtmlNodeCollection bosses = doc.DocumentNode.SelectNodes(RaidBossHTMLPattern);
+
+         HtmlNodeCollection bosses = GetNodes(RaidBossUrl, RaidBossHTMLPattern);
+
+         if (bosses == null)
+         {
+            return null;
+         }
 
          Dictionary<string, int> difficulty = new Dictionary<string, int>();
 
@@ -149,9 +163,12 @@ namespace PokeStar.ConnectionInterface
       /// <returns>Dictionary where name is key and description is value.</returns>
       public static Dictionary<string, string> GetRaidBossDifficultyTable()
       {
-         HtmlWeb web = new HtmlWeb();
-         HtmlDocument doc = web.Load(RaidBossUrl);
-         HtmlNodeCollection bosses = doc.DocumentNode.SelectNodes(DifficultyHTMLPattern);
+         HtmlNodeCollection bosses = GetNodes(RaidBossUrl, DifficultyHTMLPattern);
+
+         if (bosses == null)
+         {
+            return null;
+         }
 
          Dictionary<string, string> difficulty = new Dictionary<string, string>();
 
@@ -190,9 +207,13 @@ namespace PokeStar.ConnectionInterface
          int eggCategory = 0;
          string poke = "";
          bool pokemonFound = false;
-         HtmlWeb web = new HtmlWeb();
-         HtmlDocument doc = web.Load(EggUrl);
-         HtmlNodeCollection eggs = doc.DocumentNode.SelectNodes(EggHTMLPattern);
+
+         HtmlNodeCollection eggs = GetNodes(EggUrl, EggHTMLPattern);
+
+         if (eggs == null)
+         {
+            return null;
+         }
 
          Dictionary<int, List<string>> eggList = new Dictionary<int, List<string>>();
 
@@ -240,9 +261,12 @@ namespace PokeStar.ConnectionInterface
       /// <returns>Dictionary of line ups used by rocket grunts.</returns>
       public static Dictionary<string, Rocket> GetRockets()
       {
-         HtmlWeb web = new HtmlWeb();
-         HtmlDocument doc = web.Load(RocketUrl);
-         HtmlNodeCollection rockets = doc.DocumentNode.SelectNodes(RocketHTMLPattern);
+         HtmlNodeCollection rockets = GetNodes(RocketUrl, RocketHTMLPattern);
+
+         if (rockets == null)
+         {
+            return null;
+         }
 
          Dictionary<string, Rocket> rocketList = new Dictionary<string, Rocket>();
 
@@ -305,9 +329,12 @@ namespace PokeStar.ConnectionInterface
       /// <returns>Dictionary of line ups used by rocket leaders.</returns>
       public static Dictionary<string, Rocket> GetRocketLeaders()
       {
-         HtmlWeb web = new HtmlWeb();
-         HtmlDocument doc = web.Load(RocketUrl);
-         HtmlNodeCollection leaders = doc.DocumentNode.SelectNodes(RocketLeaderHTMLPattern);
+         HtmlNodeCollection leaders = GetNodes(RocketUrl, RocketLeaderHTMLPattern);
+
+         if (leaders == null)
+         {
+            return null;
+         }
 
          Dictionary<string, Rocket> leaderList = new Dictionary<string, Rocket>();
 
@@ -360,6 +387,23 @@ namespace PokeStar.ConnectionInterface
       {
          string silphName = name.IndexOf('’') != -1 ? name.Replace('’', '\'') : name;
          return Connections.Instance().GetPokemonWithNickname(SILPH_GUILD_NUM, silphName) ?? name;
+      }
+
+      /// <summary>
+      /// Ensures that nodes for reading html are valid.
+      /// </summary>
+      /// <param name="url">URL to check.</param>
+      /// <param name="pattern">Node pattern to find.</param>
+      /// <returns></returns>
+      private static HtmlNodeCollection GetNodes(Uri url, string pattern)
+      {
+         HtmlWeb web = new HtmlWeb();
+         HtmlDocument doc = web.Load(url);
+         if (doc == null)
+         {
+            return null;
+         }
+         return doc.DocumentNode.SelectNodes(pattern);
       }
    }
 }
