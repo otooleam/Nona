@@ -1439,7 +1439,7 @@ namespace PokeStar.ModuleParents
          return evolutions;
       }
 
-      // Type processors *************************************************
+      // Type processors ******************************************************
 
       /// <summary>
       /// Formats weather boosts as a string.
@@ -1485,7 +1485,19 @@ namespace PokeStar.ModuleParents
       /// <returns>True if the type is valid, otherwise false.</returns>
       protected static bool CheckValidType(string type)
       {
-         return Global.NONA_EMOJIS.ContainsKey($"{type}_emote");
+         return Global.TYPE.Contains(type, StringComparer.OrdinalIgnoreCase);
+      }
+
+      // Region processors ****************************************************
+
+      /// <summary>
+      /// Checks if a region is valid.
+      /// </summary>
+      /// <param name="region">Region to check.</param>
+      /// <returns>True if the region is valid, otherwise false.</returns>
+      protected static bool CheckValidRegion(string region)
+      {
+         return Global.REGION.Contains(region, StringComparer.OrdinalIgnoreCase);
       }
 
       // Message senders ******************************************************

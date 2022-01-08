@@ -26,29 +26,16 @@ namespace PokeStar.Modules
       [Summary("Gets information for a given Pokémon type.")]
       [RegisterChannel('D')]
       public async Task Type([Summary("(Optional) Get information about this type.")] string type1 = null,
-                           [Summary("(Optional) Get information about this secondary type.")] string type2 = null)
+                             [Summary("(Optional) Get information about this secondary type.")] string type2 = null)
       {
          if (type1 == null)
          {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"{Global.NONA_EMOJIS["bug_emote"]} Bug");
-            sb.AppendLine($"{Global.NONA_EMOJIS["dark_emote"]} Dark");
-            sb.AppendLine($"{Global.NONA_EMOJIS["dragon_emote"]} Dragon");
-            sb.AppendLine($"{Global.NONA_EMOJIS["electric_emote"]} Electric");
-            sb.AppendLine($"{Global.NONA_EMOJIS["fairy_emote"]} Fairy");
-            sb.AppendLine($"{Global.NONA_EMOJIS["fighting_emote"]} Fighting");
-            sb.AppendLine($"{Global.NONA_EMOJIS["fire_emote"]} Fire");
-            sb.AppendLine($"{Global.NONA_EMOJIS["flying_emote"]} Flying");
-            sb.AppendLine($"{Global.NONA_EMOJIS["ghost_emote"]} Ghost");
-            sb.AppendLine($"{Global.NONA_EMOJIS["grass_emote"]} Grass");
-            sb.AppendLine($"{Global.NONA_EMOJIS["ground_emote"]} Ground");
-            sb.AppendLine($"{Global.NONA_EMOJIS["ice_emote"]} Ice");
-            sb.AppendLine($"{Global.NONA_EMOJIS["normal_emote"]} Normal");
-            sb.AppendLine($"{Global.NONA_EMOJIS["poison_emote"]} Poison");
-            sb.AppendLine($"{Global.NONA_EMOJIS["psychic_emote"]} Psychic");
-            sb.AppendLine($"{Global.NONA_EMOJIS["rock_emote"]} Rock");
-            sb.AppendLine($"{Global.NONA_EMOJIS["steel_emote"]} Steel");
-            sb.AppendLine($"{Global.NONA_EMOJIS["water_emote"]} Water");
+
+            foreach (string type in Global.TYPE)
+            {
+               sb.AppendLine($"{Global.NONA_EMOJIS[$"{type.ToLower()}_emote"]} {type}");
+            }
 
             EmbedBuilder embed = new EmbedBuilder();
             embed.AddField($"Pokémon Types:", sb.ToString());
@@ -105,6 +92,62 @@ namespace PokeStar.Modules
                await Context.Channel.SendFileAsync(fileName, embed: embed.Build());
                Connections.DeleteFile(fileName);
             }
+         }
+      }
+
+      /// <summary>
+      /// Handle mega command.
+      /// </summary>
+      /// <param name="type">(Optional) Get information about Mega Pokémon with this type.</param>
+      /// <returns>Completed Task.</returns>
+      [Command("mega")]
+      [Summary("Gets information for Mega Pokémon of a given type.")]
+      [RegisterChannel('D')]
+      public async Task Mega([Summary("(Optional) Get information about Mega Pokémon with this type.")] string type = null)
+      {
+         if (type == null)
+         {
+            EmbedBuilder embed = new EmbedBuilder();
+
+            foreach (string typeString in Global.TYPE)
+            {
+               int megaCount = Connections.Instance().GetMegaType(typeString).Count;
+               embed.AddField($"{Global.NONA_EMOJIS[$"{typeString.ToLower()}_emote"]} {typeString}", $"{megaCount} Mega Pokémon Found", true);
+            }
+
+            embed.WithTitle($"Mega Pokémon");
+            embed.WithColor(Global.EMBED_COLOR_DEX_RESPONSE);
+            await ReplyAsync(embed: embed.Build());
+         }
+         else if (!CheckValidType(type))
+         {
+            await ResponseMessage.SendErrorMessage(Context.Channel, "Mega", $"{type} is not a valid type.");
+         }
+         else
+         {
+            StringBuilder sb = new StringBuilder();
+            List<string> megas = Connections.Instance().GetMegaType(type);
+
+            if (megas.Count == 0)
+            {
+               sb.AppendLine("No Mega Pokémon");
+            }
+            else
+            {
+               foreach (string mega in megas)
+               {
+                  sb.AppendLine(mega);
+               }
+            }
+
+            EmbedBuilder embed = new EmbedBuilder();
+            string fileName = GENERIC_IMAGE;
+            embed.WithThumbnailUrl($"attachment://{fileName}");
+            embed.AddField($"{Global.NONA_EMOJIS[$"{type.ToLower()}_emote"]} **Mega {type.ToUpper()} Pokémon:**", sb.ToString());
+
+            Connections.CopyFile(fileName);
+            await Context.Channel.SendFileAsync(fileName, embed: embed.Build());
+            Connections.DeleteFile(fileName);
          }
       }
    }

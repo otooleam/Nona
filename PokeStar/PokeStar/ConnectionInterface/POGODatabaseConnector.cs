@@ -91,8 +91,8 @@ namespace PokeStar.ConnectionInterface
                      Attack = Convert.ToInt32(reader["Attack"]),
                      Defense = Convert.ToInt32(reader["Defense"]),
                      Stamina = Convert.ToInt32(reader["Stamina"]),
-                     Shadow = Convert.ToInt32(reader["IsShadow"]) == 1,
-                     Released = Convert.ToInt32(reader["IsReleased"]) == 1,
+                     Shadow = Convert.ToInt32(reader["IsShadow"]) == TRUE,
+                     Released = Convert.ToInt32(reader["IsReleased"]) == TRUE,
                   };
                   pkmn.Type.Add(Convert.ToString(reader["Type1"]));
                   if (reader["Type2"].GetType() != typeof(DBNull))
@@ -736,6 +736,184 @@ namespace PokeStar.ConnectionInterface
       }
 
       /// <summary>
+      /// Gets count of Pokémon for a region.
+      /// If region is null count of all Pokémon is returned.
+      /// </summary>
+      /// <param name="region">Region to get Pokémon count.</param>
+      /// <returns>Count of Pokémon.</returns>
+      public int GetTotalPokemon(string region = null)
+      {
+         int count = 0;
+         string queryString = $@"SELECT COUNT(*) AS total 
+                                 FROM Pokemon 
+                                 {GetRegionWhere(region, true)};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            using (SqlDataReader reader = new SqlCommand(queryString, conn).ExecuteReader())
+            {
+               while (reader.Read())
+               {
+                  count = Convert.ToInt32(reader["total"]);
+               }
+            }
+            conn.Close();
+         }
+         return count;
+      }
+
+      /// <summary>
+      /// Gets count of released Pokémon for a region.
+      /// If region is null count of all Pokémon is returned.
+      /// </summary>
+      /// <param name="region">Region to get Pokémon count.</param>
+      /// <returns>Count of Pokémon.</returns>
+      public int GetTotalReleasedPokemon(string region = null)
+      {
+         int count = 0;
+         string queryString = $@"SELECT COUNT(*) AS total 
+                                 FROM Pokemon 
+                                 WHERE IsReleased={TRUE} 
+                                 {GetRegionWhere(region, false)};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            using (SqlDataReader reader = new SqlCommand(queryString, conn).ExecuteReader())
+            {
+               while (reader.Read())
+               {
+                  count = Convert.ToInt32(reader["total"]);
+               }
+            }
+            conn.Close();
+         }
+         return count;
+      }
+
+      /// <summary>
+      /// Gets count of shiny Pokémon for a region.
+      /// If region is null count of all Pokémon is returned.
+      /// </summary>
+      /// <param name="region">Region to get Pokémon count.</param>
+      /// <returns>Count of Pokémon.</returns>
+      public int GetTotalShinyPokemon(string region = null)
+      {
+         int count = 0;
+         string queryString = $@"SELECT COUNT(*) AS total 
+                                 FROM Pokemon 
+                                 WHERE IsShiny={TRUE} 
+                                 {GetRegionWhere(region, false)};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            using (SqlDataReader reader = new SqlCommand(queryString, conn).ExecuteReader())
+            {
+               while (reader.Read())
+               {
+                  count = Convert.ToInt32(reader["total"]);
+               }
+            }
+            conn.Close();
+         }
+         return count;
+      }
+
+      /// <summary>
+      /// Gets count of shadow Pokémon for a region.
+      /// If region is null count of all Pokémon is returned.
+      /// </summary>
+      /// <param name="region">Region to get Pokémon count.</param>
+      /// <returns>Count of Pokémon.</returns>
+      public int GetTotalShadowPokemon(string region = null)
+      {
+         int count = 0;
+         string queryString = $@"SELECT COUNT(*) AS total 
+                                 FROM Pokemon 
+                                 WHERE IsShadow={TRUE} 
+                                 {GetRegionWhere(region, false)};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            using (SqlDataReader reader = new SqlCommand(queryString, conn).ExecuteReader())
+            {
+               while (reader.Read())
+               {
+                  count = Convert.ToInt32(reader["total"]);
+               }
+            }
+            conn.Close();
+         }
+         return count;
+      }
+
+      /// <summary>
+      /// Gets count of Pokémon with form differences for a region.
+      /// If region is null count of all Pokémon is returned.
+      /// Pokémon with multiple forms in the region are only counted once. 
+      /// </summary>
+      /// <param name="region">Region to get Pokémon count.</param>
+      /// <returns>Count of Pokémon.</returns>
+      public int GetTotalFormPokemon(string region = null)
+      {
+         int count = 0;
+         string queryString = $@"SELECT COUNT(*) AS total 
+                                 FROM (
+                                 SELECT Number 
+                                 FROM Pokemon 
+                                 GROUP BY Number 
+                                 HAVING COUNT(*) > 1
+                                 ) AS FormsList
+                                 {GetRegionWhere(region, null)};";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            using (SqlDataReader reader = new SqlCommand(queryString, conn).ExecuteReader())
+            {
+               while (reader.Read())
+               {
+                  count = Convert.ToInt32(reader["total"]);
+               }
+            }
+            conn.Close();
+         }
+         return count;
+      }
+
+      /// <summary>
+      /// Gets Mega Pokémon that boost a give type.
+      /// </summary>
+      /// <param name="type">Type that is boosted.</param>
+      /// <returns>List of all Mega Pokémon with the type.</returns>
+      public List<string> GetMegaByType(string type)
+      {
+         List<string> pokemon = new List<string>();
+         string queryString = $@"SELECT Name 
+                                 FROM Pokemon 
+                                 WHERE Name LIKE '%Mega %' 
+                                 AND (Type1='{type}' 
+                                 OR Type2='{type}')";
+
+         using (SqlConnection conn = GetConnection())
+         {
+            conn.Open();
+            using (SqlDataReader reader = new SqlCommand(queryString, conn).ExecuteReader())
+            {
+               while (reader.Read())
+               {
+                  pokemon.Add(Convert.ToString(reader["Name"]));
+               }
+            }
+            conn.Close();
+         }
+         return pokemon;
+      }
+
+      /// <summary>
       /// Generates the where string for types.
       /// </summary>
       /// <param name="types">List of pokemon types.</param>
@@ -752,6 +930,37 @@ namespace PokeStar.ConnectionInterface
          }
          sb.Append(')');
          return sb.ToString();
+      }
+
+      /// <summary>
+      /// Generates the where string for region commands.
+      /// For formating the string a null format will set the where for forms.
+      /// A true fromat will add the WHERE key word.
+      /// A false format will add the AND key word.
+      /// </summary>
+      /// <param name="region">Region name to search.</param>
+      /// <param name="formatWhere">How to format the where string.</param>
+      /// <returns>Where clause for the given SQL statement.</returns>
+      private static string GetRegionWhere(string region, bool? formatWhere)
+      {
+         if (region == null)
+         {
+            return "";
+         }
+         else if (!formatWhere.HasValue)
+         {
+            return $@"WHERE FormsList.Number in (
+                      SELECT Number FROM Pokemon WHERE Region='{region}'
+                      )";
+         }
+         else if (formatWhere.Value)
+         {
+            return $@"WHERE Region='{region}'";
+         }
+         else
+         {
+            return $@"AND Region='{region}'";
+         }
       }
 
       /// <summary>
