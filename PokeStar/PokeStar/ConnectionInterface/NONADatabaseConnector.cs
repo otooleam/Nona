@@ -697,21 +697,19 @@ namespace PokeStar.ConnectionInterface
       /// <param name="ex">Is the Point of Interest an EX Gym.</param>
       public void AddPOI(ulong guild, string poiName, float latitude, float longitude, int gym, int sponsored, int ex)
       {
-         if ((gym != TRUE && gym != FALSE) ||
-             (sponsored != TRUE && sponsored != FALSE) ||
-             (ex != TRUE && ex != FALSE))
+         if ((gym == TRUE || gym == FALSE) &&
+             (sponsored == TRUE || sponsored == FALSE) &&
+             (ex == TRUE || ex == FALSE))
          {
-            return;
-         }
-
-         string queryString = $@"INSERT INTO POI (GuildID, Name, Latitude, Longitude, IsGym, IsSponsored, IsEx)
+            string queryString = $@"INSERT INTO POI (GuildID, Name, Latitude, Longitude, IsGym, IsSponsored, IsEx)
                                  VALUES ({guild}, '{poiName}', '{latitude}', '{longitude}', {gym}, {sponsored}, {ex})";
 
-         using (SqlConnection conn = GetConnection())
-         {
-            conn.Open();
-            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
-            conn.Close();
+            using (SqlConnection conn = GetConnection())
+            {
+               conn.Open();
+               _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+               conn.Close();
+            }
          }
       }
 
@@ -725,21 +723,19 @@ namespace PokeStar.ConnectionInterface
       /// <param name="value">New value of the attribute</param>
       public void UpdatePOI(ulong guild, string poiName, string attribute, int value)
       {
-         if (value != TRUE && value != FALSE)
+         if (value == TRUE || value == FALSE)
          {
-            return;
-         }
-
-         string queryString = $@"UPDATE POI 
+            string queryString = $@"UPDATE POI 
                                  SET {attribute}={value}
                                  WHERE GuildID={guild}
                                  AND Name='{poiName}';";
 
-         using (SqlConnection conn = GetConnection())
-         {
-            conn.Open();
-            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
-            conn.Close();
+            using (SqlConnection conn = GetConnection())
+            {
+               conn.Open();
+               _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+               conn.Close();
+            }
          }
       }
 

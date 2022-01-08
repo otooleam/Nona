@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 using System.Data.SqlClient;
 using System.Collections.Generic;
@@ -168,12 +167,10 @@ namespace PokeStar.ConnectionInterface
       public List<string> GetPokemonByNumber(int pokemonNumber)
       {
          List<string> pokemon = new List<string>();
-         string order = (pokemonNumber == Global.ARCEUS_NUMBER || pokemonNumber == Global.UNOWN_NUMBER) ? "ORDER BY NEWID()" : "";
 
          string queryString = $@"SELECT Name 
                                  FROM Pokemon 
-                                 WHERE Number={pokemonNumber}
-                                 {order};";
+                                 WHERE Number={pokemonNumber};";
 
          using (SqlConnection conn = GetConnection())
          {
@@ -632,20 +629,18 @@ namespace PokeStar.ConnectionInterface
       /// <param name="value">New value of the attribute.</param>
       public void SetPokemonAttribute(string pokemonName, string attribute, int value)
       {
-         if (value != TRUE && value != FALSE)
+         if (value == TRUE || value == FALSE)
          {
-            return;
-         }
-
-         string queryString = $@"UPDATE Pokemon 
+            string queryString = $@"UPDATE Pokemon 
                                  SET {attribute}={value}
                                  WHERE Name='{pokemonName}';";
 
-         using (SqlConnection conn = GetConnection())
-         {
-            conn.Open();
-            _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
-            conn.Close();
+            using (SqlConnection conn = GetConnection())
+            {
+               conn.Open();
+               _ = new SqlCommand(queryString, conn).ExecuteNonQuery();
+               conn.Close();
+            }
          }
       }
 

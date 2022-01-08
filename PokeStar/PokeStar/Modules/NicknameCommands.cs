@@ -114,11 +114,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "nickname", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonNum == Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
             {
-               await ResponseMessage.SendErrorMessage(Context.Channel, "nickname", $"Arceus #{pokemonNum} has too many forms to display, please search by name.");
+               await ResponseMessage.SendErrorMessage(Context.Channel, "nickname", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER)
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.NICKNAME_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -126,7 +126,7 @@ namespace PokeStar.Modules
             {
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                pkmn.Nicknames = Connections.Instance().GetNicknames(guild, pkmn.Name);
-               await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel);
             }
          }
          else
@@ -144,13 +144,13 @@ namespace PokeStar.Modules
                else
                {
                   pkmn.Nicknames = Connections.Instance().GetNicknames(guild, pkmn.Name);
-                  await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel);
                }
             }
             else
             {
                pkmn.Nicknames = Connections.Instance().GetNicknames(guild, pkmn.Name);
-               await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildNicknameEmbed, Context.Channel);
             }
          }
       }

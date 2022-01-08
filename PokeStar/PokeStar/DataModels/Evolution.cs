@@ -6,7 +6,7 @@ namespace PokeStar.DataModels
    /// <summary>
    /// Evolution of a Pokémon.
    /// </summary>
-   public class Evolution : IEquatable<Evolution>
+   public class Evolution
    {
       /// <summary>
       /// Initial Pokémon name.

@@ -24,7 +24,7 @@ namespace PokeStar.Modules
       /// </summary>
       /// <param name="attribute">Portion of the raid message to edit.</param>
       /// <param name="value">New value of the edited attribute.</param>
-      /// <returns></returns>
+      /// <returns>Completed Task.</returns>
       [Command("edit")]
       [Summary("Edit the time, location (loc), or tier/boss of a raid.")]
       [Remarks("Must be a reply to any type of raid message.")]
@@ -65,19 +65,32 @@ namespace PokeStar.Modules
                }
                else
                {
-                  SocketGuildUser author = (SocketGuildUser)Context.Message.Author;
+                  Player author = new Player((SocketGuildUser)Context.Message.Author);
                   if (parent.IsSingleStop())
                   {
                      parent.BossEditingPlayer = author;
                   }
                   parent.SelectionTier = calcTier;
-                  int selectType = parent.AllBosses[calcTier].Count > Global.SELECTION_EMOJIS.Length ? (int)SELECTION_TYPES.PAGE_EDIT : (int)SELECTION_TYPES.STANDARD_EDIT;
-                  RestUserMessage bossMsg = await Context.Channel.SendMessageAsync(text: $"{author.Mention}",
-                     embed: BuildBossSelectEmbed(parent.AllBosses[calcTier], selectType, parent.BossPage, null));
-                  subMessages.Add(bossMsg.Id, new RaidSubMessage((int)SUB_MESSAGE_TYPES.EDIT_BOSS_SUB_MESSAGE, raidMessage.Id));
-                  bossMsg.AddReactionsAsync(new List<IEmote>(Global.SELECTION_EMOJIS.Take(parent.AllBosses[calcTier].Count)).ToArray()
+                  int selectType = parent.AllBosses[calcTier].Count > Global.NUM_SELECTIONS ? (int)SELECTION_TYPES.PAGE_EDIT : (int)SELECTION_TYPES.STANDARD_EDIT;
+                  IEmote[] emotes = new List<IEmote>(Global.SELECTION_EMOJIS.Take(parent.AllBosses[calcTier].Count))
                      .Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR]).Prepend(extraEmojis[(int)EXTRA_EMOJI_INDEX.BACK_ARROW])
-                     .Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CHANGE_TIER]).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray());
+                     .Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CHANGE_TIER]).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray();
+#if COMPONENTS
+                  RestUserMessage bossMsg = await Context.Channel.SendMessageAsync(text: $"{author.SocketPlayer.Mention}",
+                     embed: BuildBossSelectEmbed(parent.AllBosses[calcTier], selectType, parent.BossPage, null),
+                     components: Global.BuildButtons(emotes, Global.BuildSelectionCustomIDs(Global.SELECTION_EMOJIS.Take(parent.AllBosses[calcTier].Count).Count())
+                        .Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.FORWARD_ARROR]).Prepend(extraComponents[(int)EXTRA_EMOJI_INDEX.BACK_ARROW])
+                        .Append(extraComponents[(int)EXTRA_EMOJI_INDEX.CHANGE_TIER]).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray()));
+#else
+                  RestUserMessage bossMsg = await Context.Channel.SendMessageAsync(text: $"{author.SocketPlayer.Mention}",
+                     embed: BuildBossSelectEmbed(parent.AllBosses[calcTier], selectType, parent.BossPage, null));
+#endif
+                  subMessages.Add(bossMsg.Id, new RaidSubMessage((int)SUB_MESSAGE_TYPES.EDIT_BOSS_SUB_MESSAGE, raidMessage.Id));
+
+
+#if !COMPONENTS
+                  bossMsg.AddReactionsAsync(emotes);
+#endif
                }
             }
             else
@@ -88,7 +101,8 @@ namespace PokeStar.Modules
             if (needsEdit)
             {
                await ModifyMessage(raidMessage, parent);
-               await Context.Channel.SendMessageAsync(BuildEditPingList(parent.GetAllUsers().ToImmutableList(), (SocketGuildUser)Context.Message.Author, attribute, value));
+               await Context.Channel.SendMessageAsync(BuildEditPingList(parent.GetAllUsers().ToImmutableList(),
+                  new Player((SocketGuildUser)Context.Message.Author), attribute, value));
             }
          }
          await Context.Message.DeleteAsync();
@@ -111,11 +125,11 @@ namespace PokeStar.Modules
          ulong raidMessageId = Context.Message.Reference.MessageId.Value;
          SocketUserMessage raidMessage = (SocketUserMessage)await Context.Channel.GetMessageAsync(raidMessageId);
          RaidParent parent = raidMessages[raidMessageId];
-         if (parent.IsInRaid((SocketGuildUser)Context.Message.Author, false) != Global.NOT_IN_RAID)
+         if (parent.IsInRaid(new Player((SocketGuildUser)Context.Message.Author), false) != Global.NOT_IN_RAID)
          {
             if (!parent.HasActiveInvite())
             {
-               parent.InvitingPlayer = (SocketGuildUser)Context.Message.Author;
+               parent.InvitingPlayer = new Player((SocketGuildUser)Context.Message.Author);
 
                List<string> inviteList = invites.Split(' ').ToList();
                inviteList.RemoveAll(x => x.StartsWith("<@", StringComparison.OrdinalIgnoreCase));
@@ -139,9 +153,9 @@ namespace PokeStar.Modules
 
                foreach (SocketUser invite in mentioned)
                {
-                  if (parent.InvitePlayer((SocketGuildUser)invite, parent.InvitingPlayer))
+                  if (parent.InvitePlayer(new Player((SocketGuildUser)invite), parent.InvitingPlayer))
                   {
-                     await invite.SendMessageAsync($"You have been invited to a raid by {parent.InvitingPlayer.Nickname ?? parent.InvitingPlayer.Username}.");
+                     await invite.SendMessageAsync($"You have been invited to a raid by {parent.InvitingPlayer.SocketPlayer.Nickname ?? parent.InvitingPlayer.SocketPlayer.Username}.");
                   }
                   else
                   {
@@ -176,7 +190,7 @@ namespace PokeStar.Modules
          SocketUserMessage raidMessage = (SocketUserMessage)await Context.Channel.GetMessageAsync(raidMessageId);
          RaidParent parent = raidMessages[raidMessageId];
 
-         parent.RequestInvite((SocketGuildUser)Context.Message.Author);
+         parent.RequestInvite(new Player((SocketGuildUser)Context.Message.Author));
          await ModifyMessage(raidMessage, parent);
 
          await Context.Message.DeleteAsync();
@@ -207,7 +221,7 @@ namespace PokeStar.Modules
          }
          else
          {
-            SocketGuildUser author = (SocketGuildUser)Context.Message.Author;
+            Player author = new Player((SocketGuildUser)Context.Message.Author);
             raid.AddPlayer(author, groupSize, author);
             await ModifyMessage(raidMessage, parent);
          }
@@ -290,7 +304,7 @@ namespace PokeStar.Modules
                "Must be a reply to a raid train message.")]
       [RegisterChannel('R')]
       [RaidReply()]
-      public async Task Add([Summary("Boss role of the raid.")] IRole boss,
+      public async Task AddT([Summary("Boss role of the raid.")] IRole boss,
                             [Summary("Time of the raid.")] string time,
                             [Summary("Location of the raid.")][Remainder] string location)
       {
@@ -359,13 +373,13 @@ namespace PokeStar.Modules
          {
             await ResponseMessage.SendErrorMessage(Context.Channel, "conductor", $"Command can only be run by the current conductor.");
          }
-         else if (parent.IsInRaid((SocketGuildUser)conductor, false) == Global.NOT_IN_RAID)
+         else if (parent.IsInRaid(new Player((SocketGuildUser)conductor), false) == Global.NOT_IN_RAID)
          {
             await ResponseMessage.SendErrorMessage(Context.Channel, "conductor", $"New conductor must be in the train.");
          }
          else
          {
-            parent.Conductor = (SocketGuildUser)conductor;
+            parent.Conductor = new Player((SocketGuildUser)conductor);
             await ModifyMessage(raidMessage, parent);
          }
          await Context.Message.DeleteAsync();
@@ -397,20 +411,20 @@ namespace PokeStar.Modules
          {
             await ResponseMessage.SendErrorMessage(Context.Channel, "remove", $"Command can only be run by the current conductor.");
          }
-         else if (parent.IsInRaid((SocketGuildUser)user, false) == Global.NOT_IN_RAID)
+         else if (parent.IsInRaid(new Player((SocketGuildUser)user), false) == Global.NOT_IN_RAID)
          {
             await ResponseMessage.SendErrorMessage(Context.Channel, "remove", $"The user is not in the train.");
          }
          else
          {
-            RaidRemoveResult returnValue = parent.RemovePlayer((SocketGuildUser)user);
+            RaidRemoveResult returnValue = parent.RemovePlayer(new Player((SocketGuildUser)user));
 
-            foreach (SocketGuildUser invite in returnValue.Users)
+            foreach (Player invite in returnValue.Users)
             {
-               await invite.SendMessageAsync(BuildUnInvitedMessage((SocketGuildUser)user));
+               await invite.SocketPlayer.SendMessageAsync(BuildUnInvitedMessage(new Player((SocketGuildUser)user)));
             }
 
-            await user.SendMessageAsync(BuildRaidTrainRemoveMessage((SocketGuildUser)Context.Message.Author));
+            await user.SendMessageAsync(BuildRaidTrainRemoveMessage(new Player((SocketGuildUser)Context.Message.Author)));
 
             if (returnValue.Group != Global.NOT_IN_RAID)
             {
@@ -467,7 +481,8 @@ namespace PokeStar.Modules
       {
          ulong raidMessageId = Context.Message.Reference.MessageId.Value;
          RaidParent parent = raidMessages[raidMessageId];
-         SocketGuildUser newConductor = conductor == null ? (SocketGuildUser)Context.Message.Author : (SocketGuildUser)conductor;
+         SocketGuildUser newSocketConductor = conductor == null ? (SocketGuildUser)Context.Message.Author : (SocketGuildUser)conductor;
+         Player newConductor = new Player(newSocketConductor);
 
          if (!parent.IsSingleStop())
          {
@@ -479,21 +494,28 @@ namespace PokeStar.Modules
             Context.Channel.DeleteMessageAsync(raidMessageId);
             raidMessages.Remove(raidMessageId);
 
-            string fileName = RAID_TRAIN_IMAGE_NAME;
-            Connections.CopyFile(fileName);
             if (parent is Raid raid)
             {
-               RestUserMessage raidMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildRaidTrainEmbed(raid, fileName));
-               raidMessages.Add(raidMessage.Id, raid);
-               SetEmojis(raidMessage, raidEmojis.Concat(trainEmojis).ToArray());
+#if COMPONENTS
+               SendRaidMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidTrainEmbed, Context.Channel, Global.BuildButtons(
+                  raidEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
+                  raidComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
+#else
+               SendRaidMessage(raid, RAID_TRAIN_IMAGE_NAME, BuildRaidTrainEmbed, Context.Channel,
+                  raidEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray());
+#endif
             }
             else if (parent is RaidMule mule)
             {
-               RestUserMessage raidMessage = await Context.Channel.SendFileAsync(fileName, embed: BuildRaidMuleTrainEmbed(mule, fileName));
-               raidMessages.Add(raidMessage.Id, mule);
-               SetEmojis(raidMessage, muleEmojis.Concat(trainEmojis).ToArray());
+#if COMPONENTS
+               SendRaidMuleMessage(mule, RAID_TRAIN_IMAGE_NAME, BuildRaidMuleTrainEmbed, Context.Channel, Global.BuildButtons(
+                  muleEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray(),
+                  muleComponents.Concat(trainComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray()));
+#else
+               SendRaidMuleMessage(mule, RAID_TRAIN_IMAGE_NAME, BuildRaidMuleTrainEmbed, Context.Channel,
+                  muleEmojis.Concat(trainEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.HELP]).ToArray());
+#endif
             }
-            Connections.DeleteFile(fileName);
          }
          await Context.Message.DeleteAsync();
       }
@@ -628,11 +650,17 @@ namespace PokeStar.Modules
 
          parent.BossPage = 0;
          await message.RemoveAllReactionsAsync();
+         IEmote[] emotes = new List<IEmote>(tierEmojis).Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray();
          await ((SocketUserMessage)message).ModifyAsync(x =>
          {
             x.Embed = BuildTierSelectEmbed();
+#if COMPONENTS
+            x.Components = Global.BuildButtons(emotes, new List<string>(tierComponents).Append(extraComponents[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray());
+#endif
          });
-         ((SocketUserMessage)message).AddReactionsAsync(tierEmojis.Append(extraEmojis[(int)EXTRA_EMOJI_INDEX.CANCEL]).ToArray());
+#if !COMPONENTS
+         ((SocketUserMessage)message).AddReactionsAsync(emotes);
+#endif
 
          await Context.Message.DeleteAsync();
       }

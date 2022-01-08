@@ -149,8 +149,7 @@ namespace PokeStar.ConnectionInterface
                else if (bossFound && line.StartsWith("<div class=\"hexagon difficulty", StringComparison.OrdinalIgnoreCase))
                {
                   difficulty.Add(Regex.Replace(line, HTML_TAG_PATTERN, string.Empty).Trim(),
-                                 int.Parse(line.Remove(0, "<div class=\"hexagon difficulty".Length)[0].ToString())
-                                 );
+                                 int.Parse(line.Remove(0, "<div class=\"hexagon difficulty".Length)[0].ToString()));
                }
             }
          }

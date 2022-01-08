@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Discord.WebSocket;
 
 namespace PokeStar.DataModels
 {
@@ -49,7 +48,7 @@ namespace PokeStar.DataModels
       /// <summary>
       /// List of players looking for an invite to the raid.
       /// </summary>
-      protected List<SocketGuildUser> Invite { get; private set; }
+      protected List<Player> Invite { get; private set; }
 
       /// <summary>
       /// Tier of the raid.
@@ -80,18 +79,18 @@ namespace PokeStar.DataModels
       /// <summary>
       /// Player who is in the process of inviting someone.
       /// </summary>
-      public SocketGuildUser InvitingPlayer { get; set; }
+      public Player InvitingPlayer { get; set; }
 
       /// <summary>
       /// Player in charge of the train.
       /// </summary>
-      public SocketGuildUser Conductor { get; set; }
+      public Player Conductor { get; set; }
 
       /// <summary>
       /// Player editing the boss of the raid.
       /// Only used for single stop raids.
       /// </summary>
-      public SocketGuildUser BossEditingPlayer { get; set; }
+      public Player BossEditingPlayer { get; set; }
 
       /// <summary>
       /// List of all current raid bosses.
@@ -114,7 +113,7 @@ namespace PokeStar.DataModels
       /// <param name="location">Where the raid is.</param>
       /// <param name="conductor">Conductor of the raid train.</param>
       /// <param name="boss">Name of the raid boss.</param>
-      public RaidParent(int groupLimit, int playerLimit, int inviteLimit, short tier, string time, string location, SocketGuildUser conductor, string boss = null)
+      public RaidParent(int groupLimit, int playerLimit, int inviteLimit, short tier, string time, string location, Player conductor, string boss = null)
       {
          RaidGroupLimit = groupLimit;
          PlayerLimit = playerLimit;
@@ -131,7 +130,7 @@ namespace PokeStar.DataModels
          {
             new RaidGroup(PlayerLimit, InviteLimit)
          };
-         Invite = new List<SocketGuildUser>();
+         Invite = new List<Player>();
          CurrentLocation = 0;
          CreatedAt = DateTime.Now;
          InvitingPlayer = null;
@@ -163,7 +162,7 @@ namespace PokeStar.DataModels
          {
             new RaidGroup(PlayerLimit, InviteLimit)
          };
-         Invite = new List<SocketGuildUser>();
+         Invite = new List<Player>();
          CurrentLocation = 0;
          CreatedAt = DateTime.Now;
          InvitingPlayer = null;
@@ -193,9 +192,9 @@ namespace PokeStar.DataModels
       /// Gets all users in all raid groups and who requested invites.
       /// </summary>
       /// <returns>A list of all users.</returns>
-      public List<SocketGuildUser> GetAllUsers()
+      public List<Player> GetAllUsers()
       {
-         List<SocketGuildUser> allUsers = new List<SocketGuildUser>();
+         List<Player> allUsers = new List<Player>();
          allUsers.AddRange(Invite);
          foreach (RaidGroup group in Groups)
          {
@@ -208,7 +207,7 @@ namespace PokeStar.DataModels
       /// Gets all users that want an invite to the raid.
       /// </summary>
       /// <returns>List of users.</returns>
-      public ImmutableList<SocketGuildUser> GetReadonlyInviteList()
+      public ImmutableList<Player> GetReadonlyInviteList()
       {
          return Invite.ToImmutableList();
       }
@@ -254,20 +253,20 @@ namespace PokeStar.DataModels
       /// <param name="partySize">Number of accounts the player is bringing.</param>
       /// <param name="invitedBy">Who invited the user.</param>
       /// <returns>True if the user was added, otherwise false.</returns>
-      public abstract bool AddPlayer(SocketGuildUser player, int partySize, SocketGuildUser invitedBy = null);
+      public abstract bool AddPlayer(Player player, int partySize, Player invitedBy = null);
 
       /// <summary>
       /// Removes a player from the raid.
       /// </summary>
       /// <param name="player">Player to remove.</param>
       /// <returns>RaidRemove with raid group and list of invited users.</returns>
-      public abstract RaidRemoveResult RemovePlayer(SocketGuildUser player);
+      public abstract RaidRemoveResult RemovePlayer(Player player);
 
       /// <summary>
       /// Requests an invite to a raid for a player.
       /// </summary>
       /// <param name="player">Player that requested the invite.</param>
-      public abstract void RequestInvite(SocketGuildUser player);
+      public abstract void RequestInvite(Player player);
 
       /// <summary>
       /// Accepts an invite of a player.
@@ -275,7 +274,7 @@ namespace PokeStar.DataModels
       /// <param name="requester">Player that requested the invite.</param>
       /// <param name="accepter">Player that accepted the invite.</param>
       /// <returns>True if the requester was invited, otherwise false.</returns>
-      public abstract bool InvitePlayer(SocketGuildUser requester, SocketGuildUser accepter);
+      public abstract bool InvitePlayer(Player requester, Player accepter);
 
       /// <summary>
       /// Checks if a user is in the raid.
@@ -283,7 +282,7 @@ namespace PokeStar.DataModels
       /// <param name="player">Player to check.</param>
       /// <param name="checkInvite">Should invites be checked.</param>
       /// <returns>Raid Group number if the user is in the raid, otherwise -1.</returns>
-      public abstract int IsInRaid(SocketGuildUser player, bool checkInvite = true);
+      public abstract int IsInRaid(Player player, bool checkInvite = true);
 
       /// <summary>
       /// Is the RaidParent a single stop.

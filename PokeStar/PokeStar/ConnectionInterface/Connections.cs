@@ -243,7 +243,6 @@ namespace PokeStar.ConnectionInterface
 
          if (newBosses != null)
          {
-
             bool bossesChanged = RaidBosses == null || RaidBosses.Keys.Count != newBosses.Keys.Count || !RaidBosses.Keys.All(newBosses.Keys.Contains);
 
             foreach (int tier in newBosses.Keys)
@@ -255,7 +254,7 @@ namespace PokeStar.ConnectionInterface
             {
                if (SilphData.GetRaidBossesConfirmed())
                {
-                  UpdateRaidBosses(guilds);
+                  await UpdateRaidBosses(guilds);
                }
                else
                {
@@ -273,7 +272,7 @@ namespace PokeStar.ConnectionInterface
                   }
                   if (updateTopBosses)
                   {
-                     UpdateRaidBosses(guilds);
+                     await UpdateRaidBosses(guilds);
                   }
                   else
                   {

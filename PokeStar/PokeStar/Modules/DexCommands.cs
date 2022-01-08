@@ -39,11 +39,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "dex", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonNum == Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
             {
-               await ResponseMessage.SendErrorMessage(Context.Channel, "dex", $"Arceus #{pokemonNum} has too many forms to display, please search by name.");
+               await ResponseMessage.SendErrorMessage(Context.Channel, "dex", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER)
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.DEX_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -52,7 +52,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                Connections.Instance().GetPokemonStats(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel);
             }
          }
          else
@@ -71,14 +71,14 @@ namespace PokeStar.Modules
                {
                   Connections.Instance().GetPokemonStats(ref pkmn);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel);
                }
             }
             else
             {
                Connections.Instance().GetPokemonStats(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.DEX_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildDexEmbed, Context.Channel);
             }
          }
       }
@@ -104,7 +104,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "cp", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "cp", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.CP_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -113,7 +117,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                Connections.GetPokemonCP(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel);
             }
          }
          else
@@ -132,14 +136,14 @@ namespace PokeStar.Modules
                {
                   Connections.GetPokemonCP(ref pkmn);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel);
                }
             }
             else
             {
                Connections.GetPokemonCP(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.CP_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildCPEmbed, Context.Channel);
             }
          }
       }
@@ -166,7 +170,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "evo", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "evo", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.EVO_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -175,7 +183,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                pkmn.Evolutions = GenerateEvoDict(pkmn.Name);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel);
             }
          }
          else
@@ -194,14 +202,14 @@ namespace PokeStar.Modules
                {
                   pkmn.Evolutions = GenerateEvoDict(pkmn.Name);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel);
                }
             }
             else
             {
                pkmn.Evolutions = GenerateEvoDict(pkmn.Name);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.EVO_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildEvoEmbed, Context.Channel);
             }
          }
       }
@@ -228,7 +236,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "counter", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "counter", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -237,7 +249,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                Connections.Instance().GetPokemonCounter(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel);
             }
          }
          else
@@ -256,14 +268,14 @@ namespace PokeStar.Modules
                {
                   Connections.Instance().GetPokemonCounter(ref pkmn);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel);
                }
             }
             else
             {
                Connections.Instance().GetPokemonCounter(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.COUNTER_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildCounterEmbed, Context.Channel);
             }
          }
       }
@@ -290,7 +302,11 @@ namespace PokeStar.Modules
             {
                await ResponseMessage.SendErrorMessage(Context.Channel, "pvp", $"Pokémon with number {pokemonNum} cannot be found.");
             }
-            else if (pokemonWithNumber.Count > 1 && pokemonNum != Global.UNOWN_NUMBER && pokemonNum != Global.ARCEUS_NUMBER)
+            else if (pokemonWithNumber.Count > Global.MAX_OPTIONS)
+            {
+               await ResponseMessage.SendErrorMessage(Context.Channel, "pvp", $"Pokémon with number {pokemonNum} has to many forms to be displayed. One Pokémon is {pokemonWithNumber.First()}.");
+            }
+            else if (pokemonWithNumber.Count > 1)
             {
                await SendDexSelectionMessage((int)DEX_MESSAGE_TYPES.PVP_MESSAGE, pokemonWithNumber, Context.Channel);
             }
@@ -299,7 +315,7 @@ namespace PokeStar.Modules
                Pokemon pkmn = Connections.Instance().GetPokemon(pokemonWithNumber.First());
                Connections.Instance().GetPokemonPvP(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel);
             }
          }
          else
@@ -318,14 +334,14 @@ namespace PokeStar.Modules
                {
                   Connections.Instance().GetPokemonPvP(ref pkmn);
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel);
                }
             }
             else
             {
                Connections.Instance().GetPokemonPvP(ref pkmn);
                pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.PVP_MESSAGE] = true;
-               await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel, true);
+               await SendDexMessage(pkmn, BuildPvPEmbed, Context.Channel);
             }
          }
       }
@@ -388,7 +404,7 @@ namespace PokeStar.Modules
                      pkmn.Forms = Connections.Instance().GetFormTags(baseName);
                   }
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel);
                }
             }
             else
@@ -417,7 +433,7 @@ namespace PokeStar.Modules
                         pkmn.Forms = Connections.Instance().GetFormTags(baseName);
                      }
                      pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
-                     await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel, true);
+                     await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel);
                   }
                }
                else
@@ -434,7 +450,7 @@ namespace PokeStar.Modules
                      pkmn.Forms = Connections.Instance().GetFormTags(baseName);
                   }
                   pkmn.CompleteDataLookUp[(int)DEX_MESSAGE_TYPES.FORM_MESSAGE] = true;
-                  await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel, true);
+                  await SendDexMessage(pkmn, BuildFormEmbed, Context.Channel);
                }
             }
          }
@@ -450,7 +466,7 @@ namespace PokeStar.Modules
       [RegisterChannel('D')]
       public async Task DPS()
       {
-         string fileName = GENERIC_IMAGE;
+         string fileName = BATTLE_IMAGE;
          Pokemon pokemon = Connections.Instance().GetPokemon(Connections.Instance().GetPokemonByNumber(Global.DUMMY_POKE_NUM).First());
          Connections.Instance().GetPokemonCounter(ref pokemon);
          Connections.CopyFile(fileName);

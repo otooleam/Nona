@@ -48,9 +48,9 @@ namespace PokeStar.Modules
       /// </summary>
       private readonly Dictionary<string, string> EditableAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
       {
-         ["GYM"]       = "IsGym",
+         ["GYM"] = "IsGym",
          ["SPONSORED"] = "IsSponsored",
-         ["EX"]        = "IsEx"
+         ["EX"] = "IsEx"
       };
 
       /// <summary>
@@ -79,11 +79,26 @@ namespace PokeStar.Modules
             if (pkmnPOI == null)
             {
                List<string> gymNames = Connections.Instance().SearchPOI(guild, poi);
+#if !COMPONENTS || !DROP_DOWNS
+               IEmote[] selections = Global.SELECTION_EMOJIS.Take(gymNames.Count).ToArray();
+#endif
                Connections.CopyFile(UNKNOWN_POI_IMAGE);
+#if COMPONENTS
+#if DROP_DOWNS
+               RestUserMessage poiMessage = await Context.Channel.SendFileAsync(UNKNOWN_POI_IMAGE, embed: BuildSelectEmbed(UNKNOWN_POI_IMAGE), 
+                  components: Global.BuildSelectionMenu(gymNames.ToArray(), Global.DEFAULT_MENU_PLACEHOLDER));
+#else
+               RestUserMessage poiMessage = await Context.Channel.SendFileAsync(UNKNOWN_POI_IMAGE, 
+                  embed: BuildSelectEmbed(gymNames, UNKNOWN_POI_IMAGE), components: Global.BuildButtons(selections));
+#endif
+#else
                RestUserMessage poiMessage = await Context.Channel.SendFileAsync(UNKNOWN_POI_IMAGE, embed: BuildSelectEmbed(gymNames, UNKNOWN_POI_IMAGE));
+#endif
                Connections.DeleteFile(UNKNOWN_POI_IMAGE);
                poiMessages.Add(poiMessage.Id, gymNames);
-               poiMessage.AddReactionsAsync(Global.SELECTION_EMOJIS.Take(gymNames.Count).ToArray());
+#if !COMPONENTS
+               poiMessage.AddReactionsAsync(selections);
+#endif
             }
             else
             {
@@ -361,6 +376,33 @@ namespace PokeStar.Modules
          return poiMessages.ContainsKey(id);
       }
 
+#if COMPONENTS
+      /// <summary>
+      /// Handles a button press on a poi select message.
+      /// </summary>
+      /// <param name="message">Message that the component is on.</param>
+      /// <param name="component">Component that was pressed.</param>
+      /// <returns>Completed Task.</returns>
+      public static async Task POIMessageButtonHandle(IMessage message, SocketMessageComponent component, ulong guildId)
+      {
+         List<string> poiMessage = poiMessages[message.Id];
+         for (int i = 0; i < poiMessage.Count; i++)
+         {
+            if (component.Data.CustomId.Equals($"{Global.SELECTION_BUTTON_PREFIX}{i + 1}"))
+            {
+               await message.DeleteAsync();
+               POI poi = Connections.Instance().GetPOI(guildId, poiMessage[i]);
+
+               string fileName = poi.IsGym ? GYM_IMAGE : STOP_IMAGE;
+               poi.Nicknames = Connections.Instance().GetPOINicknames(guildId, poi.Name);
+               Connections.CopyFile(fileName);
+               await component.Channel.SendFileAsync(fileName, embed: BuildPOIEmbed(poi, fileName));
+               Connections.CopyFile(fileName);
+               poiMessages.Remove(message.Id);
+            }
+         }
+      }
+#else
       /// <summary>
       /// Handles a reaction on a poi select message.
       /// </summary>
@@ -383,11 +425,11 @@ namespace PokeStar.Modules
                await reaction.Channel.SendFileAsync(fileName, embed: BuildPOIEmbed(poi, fileName));
                Connections.CopyFile(fileName);
                poiMessages.Remove(message.Id);
-               return;
             }
          }
          await message.RemoveReactionAsync(reaction.Emote, (SocketGuildUser)reaction.User);
       }
+#endif
 
       /// <summary>
       /// Builds a POI embed.
@@ -417,6 +459,21 @@ namespace PokeStar.Modules
          return embed.Build();
       }
 
+#if COMPONENTS && DROP_DOWNS
+      /// <summary>
+      /// Builds the POI select embed.
+      /// </summary>
+      /// <param name="fileName">Name of image file.</param>
+      /// <returns>Embed for selecting a POI.</returns>
+      private static Embed BuildSelectEmbed(string fileName)
+      {
+         EmbedBuilder embed = new EmbedBuilder();
+         embed.WithColor(Global.EMBED_COLOR_POI_RESPONSE);
+         embed.WithTitle("Do you mean...?");
+         embed.WithThumbnailUrl($"attachment://{fileName}");
+         return embed.Build();
+      }
+#else
       /// <summary>
       /// Builds the POI select embed.
       /// </summary>
@@ -438,5 +495,6 @@ namespace PokeStar.Modules
          embed.WithThumbnailUrl($"attachment://{fileName}");
          return embed.Build();
       }
+#endif
    }
 }
