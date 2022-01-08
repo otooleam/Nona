@@ -113,6 +113,7 @@ namespace PokeStar
          client.Ready += HandleReady;
          client.JoinedGuild += HandleJoinGuild;
          client.LeftGuild += HandleLeftGuild;
+         client.ChannelDestroyed += HandleChannelDelete;
          return Task.CompletedTask;
       }
 
@@ -325,6 +326,19 @@ namespace PokeStar
       {
          Connections.Instance().DeleteRegistration(guild.Id);
          Connections.Instance().DeleteSettings(guild.Id);
+         return Task.CompletedTask;
+      }
+
+      /// <summary>
+      /// Handles the Channel Destroyed event.
+      /// </summary>
+      /// <param name="channel">Channel that was destroyed.</param>
+      /// <returns>Task Complete.</returns>
+      private Task HandleChannelDelete(SocketChannel channel)
+      {
+         SocketGuildChannel chan = channel as SocketGuildChannel;
+
+         Connections.Instance().DeleteRegistration(chan.Guild.Id, channel.Id);
          return Task.CompletedTask;
       }
 
