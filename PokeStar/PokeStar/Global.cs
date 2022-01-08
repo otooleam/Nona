@@ -12,27 +12,12 @@ namespace PokeStar
    /// </summary>
    public static class Global
    {
-      // é ********************************************************************
-      
-      /// <summary>
-      /// Save formated Pokémon.
-      /// </summary>
-      private const string POKEMON  = "Pokémon";
-
-      /// <summary>
-      /// Save formated PokéDex.
-      /// </summary>
-      private const string POKEDEX  = "PokéDex";
-
-      /// <summary>
-      /// Save formated PokéBall.
-      /// </summary>
-      private const string POKEBALL = "PokéBall";
-
-      /// <summary>
-      /// Save formated Poké Stop.
-      /// </summary>
-      private const string POKESTOP = "Poké Stop";
+      /* Saved formating for é ************************************************
+       * Pokémon
+       * PokéDex
+       * PokéBall
+       * Poké Stop
+       ***********************************************************************/
 
       // File IO **************************************************************
 
@@ -357,7 +342,35 @@ namespace PokeStar
       /// </summary>
       public static readonly string EMPTY_FIELD            = "-----";
 
+      // Profile values *******************************************************
+
+      /// <summary>
+      /// Length of a trainer's friend code.
+      /// </summary>
+      public static int FRIEND_CODE_LENGTH  = 12;
+
+      /// <summary>
+      /// Length of a trainer's referal code.
+      /// </summary>
+      public static int REFERAL_CODE_LENGTH = 9;
+
       // Level constents ******************************************************
+
+      /// <summary>
+      /// Player experiance requirement.
+      /// </summary>
+      public static readonly uint[] LEVEL_UP_EXP = {
+         0       , 1000     , 3000     , 6000     , 10000    , 
+         15000   , 21000    , 28000    , 36000    , 45000    , 
+         55000   , 65000    , 75000    , 85000    , 100000   , 
+         120000  , 140000   , 160000   , 185000   , 210000   , 
+         260000  , 335000   , 435000   , 560000   , 710000   , 
+         900000  , 1100000  , 1350000  , 1650000  , 2000000  , 
+         2500000 , 3000000  , 3750000  , 4750000  , 6000000  , 
+         7500000 , 9500000  , 12000000 , 15000000 , 20000000 , 
+         26000000, 33500000 , 42500000 , 53500000 , 66500000 , 
+         82000000, 100000000, 121000000, 146000000, 176000000
+      };
 
       /// <summary>
       /// Discrete CP multiplier.
@@ -909,6 +922,7 @@ namespace PokeStar
       {
          [FULL_REGISTER_STRING] = FULL_REGISTER_STRING,
          ["ACCOUNT"]            = REGISTER_STRING_ACCOUNT.ToString(),
+         ["PROFILE"]            = REGISTER_STRING_ACCOUNT.ToString(),
          ["A"]                  = REGISTER_STRING_ACCOUNT.ToString(),
          ["POKEDEX"]            = REGISTER_STRING_DEX.ToString(),
          ["DEX"]                = REGISTER_STRING_DEX.ToString(),

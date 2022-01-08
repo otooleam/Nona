@@ -3,7 +3,7 @@
 namespace PokeStar.DataModels
 {
    /// <summary>
-   /// An in game Point of Interest (POI).
+   /// In game Point of Interest (POI).
    /// </summary>
    public class POI
    {

@@ -207,7 +207,6 @@ namespace PokeStar
 
          IUser user = reaction.User.Value;
 
-
          if (message != null && reaction.User.IsSpecified && !user.IsBot)
          {
             if (RaidCommandParent.IsRaidMessage(message.Id))

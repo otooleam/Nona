@@ -24,7 +24,7 @@ namespace PokeStar.Modules
       [Summary("Registers a channel to run a given type of command.")]
       [Remarks("To register a channel\n" +
                "for this.............................use one of these:\n" +
-               //"Player Accounts............account / a\n" +
+               "Player Accounts............account / profile / a\n" +
                "PokéDex..........................pokedex / dex / d\n" +
                //"EX Raids..........................ex / e\n" +
                "Information....................info / i\n" +
@@ -86,7 +86,7 @@ namespace PokeStar.Modules
       [Summary("Unregisters a channel from a given type of command.")]
       [Remarks("To register a channel\n" +
                "for this.............................use one of these:\n" +
-               //"Player Accounts............account / a\n" +
+               "Player Accounts............account / profile / a\n" +
                "PokéDex..........................pokedex / dex / d\n" +
                //"EX Raids..........................ex / e\n" +
                "Information....................info / i\n" +

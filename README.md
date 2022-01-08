@@ -27,10 +27,10 @@ To invite Nona to your server, invite it from [here](https://discord.com/api/oau
 * Current Team GO Rocket rotations *
 * Gym/Pokéstop location tracking
 * Subscribing to raid boss based roles
+* Player Accounts
 
 ### Future Features:
 * Support for EX-Raids
-* Player Accounts
 * Raid image processing
 
 
