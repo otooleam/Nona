@@ -25,13 +25,15 @@ namespace PokeStar
       private static DiscordSocketClient client;
       private static CommandService commands;
       private static IServiceProvider services;
-      
+
       private readonly int SizeMessageCashe = 100;
       private readonly LogSeverity DefaultLogLevel = LogSeverity.Info;
 
       private bool loggingInProgress;
 
       private Timer SilphUpdate;
+
+      private static bool emoteSet = false;
 
       /// <summary>
       /// Main function for the system.
@@ -64,11 +66,12 @@ namespace PokeStar
          int logLevel = Convert.ToInt32(Global.ENV_FILE.GetValue("log_level").ToString());
          Global.LOG_LEVEL = !Enum.IsDefined(typeof(LogSeverity), logLevel) ? DefaultLogLevel : (LogSeverity)logLevel;
 
+         Console.Title = Global.HOME_SERVER;
+
          DiscordSocketConfig clientConfig = new DiscordSocketConfig
          {
             MessageCacheSize = SizeMessageCashe,
-            LogLevel = Global.LOG_LEVEL,
-            ExclusiveBulkDelete = true
+            LogLevel = Global.LOG_LEVEL
          };
          client = new DiscordSocketClient(clientConfig);
          CommandServiceConfig commandConfig = new CommandServiceConfig
@@ -106,10 +109,10 @@ namespace PokeStar
          client.MessageReceived += HandleCommandAsync;
          await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
          client.ReactionAdded += HandleReactionAdded;
+         client.ReactionRemoved += HandleReactionRemoved;
          client.Ready += HandleReady;
          client.JoinedGuild += HandleJoinGuild;
          client.LeftGuild += HandleLeftGuild;
-         SilphUpdate = new Timer(async _ => await Connections.Instance().RunSilphUpdate(client.Guilds.ToList()), new AutoResetEvent(false), 0, 300000);
          return Task.CompletedTask;
       }
 
@@ -144,8 +147,9 @@ namespace PokeStar
       /// <returns>Task Complete.</returns>
       private async Task<Task> HandleCommandAsync(SocketMessage cmdMessage)
       {
-         if (!(cmdMessage is SocketUserMessage message) || 
-             (message.Author.IsBot && 
+         if (!Global.INIT_COMPLETE ||
+            !(cmdMessage is SocketUserMessage message) ||
+             (message.Author.IsBot &&
              (!Global.USE_NONA_TEST || !message.Author.Username.Equals("NonaTest", StringComparison.OrdinalIgnoreCase)))
              || cmdMessage.Channel is IPrivateChannel)
          {
@@ -187,11 +191,18 @@ namespace PokeStar
       /// <param name="reaction">Reaction made on the message.</param>
       /// <returns>Task Complete.</returns>
       private async Task<Task> HandleReactionAdded(Cacheable<IUserMessage, ulong> cachedMessage,
-          ISocketMessageChannel originChannel, SocketReaction reaction)
+          Cacheable<IMessageChannel, ulong> originChannel, SocketReaction reaction)
       {
-         IMessage message = await originChannel.GetMessageAsync(cachedMessage.Id);
+         ISocketMessageChannel channel = reaction.Channel ?? (ISocketMessageChannel)FindChannel(originChannel.Id);
 
-         SocketGuildChannel chnl = message.Channel as SocketGuildChannel;
+         if (channel == null)
+         {
+            return Task.CompletedTask;
+         }
+
+         IMessage message = await channel.GetMessageAsync(cachedMessage.Id);
+
+         SocketGuildChannel chnl = channel as SocketGuildChannel;
          ulong guild = chnl.Guild.Id;
 
          IUser user = reaction.User.Value;
@@ -237,7 +248,35 @@ namespace PokeStar
             }
             else if (Connections.IsNotifyMessage(message.Id))
             {
-               await Connections.NotifyMessageReactionHandle(message, reaction, chnl.Guild);
+               await Connections.NotifyMessageReactionAddedHandle(reaction, chnl.Guild);
+            }
+         }
+         return Task.CompletedTask;
+      }
+
+      /// <summary>
+      /// Handles the Reaction Removed event.
+      /// </summary>
+      /// <param name="cachedMessage">Message that was reaction is on.</param>
+      /// <param name="originChannel">Channel where the message is located.</param>
+      /// <param name="reaction">Reaction made on the message.</param>
+      /// <returns>Task Complete.</returns>
+      private async Task<Task> HandleReactionRemoved(Cacheable<IUserMessage, ulong> cachedMessage,
+          Cacheable<IMessageChannel, ulong> originChannel, SocketReaction reaction)
+      {
+         IMessage message = await reaction.Channel.GetMessageAsync(cachedMessage.Id);
+
+         SocketGuildChannel chnl = message.Channel as SocketGuildChannel;
+         ulong guild = chnl.Guild.Id;
+
+         IUser user = reaction.User.Value;
+
+
+         if (message != null && reaction.User.IsSpecified && !user.IsBot)
+         {
+            if (Connections.IsNotifyMessage(message.Id))
+            {
+               await Connections.NotifyMessageReactionRemovedHandle(reaction, chnl.Guild);
             }
          }
          return Task.CompletedTask;
@@ -261,6 +300,8 @@ namespace PokeStar
                Connections.Instance().InitSettings(guild.Id);
             }
          }
+
+         SilphUpdate = new Timer(async _ => await Connections.Instance().RunSilphUpdate(client.Guilds.ToList()), new AutoResetEvent(false), 0, 300000);
 
          return Task.CompletedTask;
       }
@@ -294,32 +335,54 @@ namespace PokeStar
       /// <param name="server">Server that the emotes are on.</param>
       private static void SetEmotes(SocketGuild server)
       {
-         List<string> nonaEmojiKeys = Global.NONA_EMOJIS.Keys.ToList();
-         foreach (string emote in nonaEmojiKeys)
+         if (!emoteSet)
          {
-            Global.NONA_EMOJIS[emote] = Emote.Parse(
-               server.Emotes.FirstOrDefault(
-                  x => x.Name.Equals(
-                     Global.NONA_EMOJIS[emote],
-                     StringComparison.OrdinalIgnoreCase)
-                  ).ToString()).ToString();
-         }
+            List<string> nonaEmojiKeys = Global.NONA_EMOJIS.Keys.ToList();
+            foreach (string emote in nonaEmojiKeys)
+            {
+               Global.NONA_EMOJIS[emote] = Emote.Parse(
+                  server.Emotes.FirstOrDefault(
+                     x => x.Name.Equals(
+                        Global.NONA_EMOJIS[emote],
+                        StringComparison.OrdinalIgnoreCase)
+                     ).ToString()).ToString();
+            }
 
-         List<string> noumEmojiKeys = Global.NUM_EMOJI_NAMES.Keys.ToList();
-         foreach (string emote in noumEmojiKeys)
-         {
-            Global.NUM_EMOJIS.Add(Emote.Parse(
-               server.Emotes.FirstOrDefault(
-                  x => x.Name.Equals(
-                     Global.NUM_EMOJI_NAMES[emote], 
-                     StringComparison.OrdinalIgnoreCase)
-                  ).ToString()));
-         }
+            List<string> noumEmojiKeys = Global.NUM_EMOJI_NAMES.Keys.ToList();
+            foreach (string emote in noumEmojiKeys)
+            {
+               Global.NUM_EMOJIS.Add(Emote.Parse(
+                  server.Emotes.FirstOrDefault(
+                     x => x.Name.Equals(
+                        Global.NUM_EMOJI_NAMES[emote],
+                        StringComparison.OrdinalIgnoreCase)
+                     ).ToString()));
+            }
 
-         for (int i = 0; i < Global.NUM_SELECTIONS; i++)
-         {
-            Global.SELECTION_EMOJIS[i] = Global.NUM_EMOJIS[i];
+            for (int i = 0; i < Global.NUM_SELECTIONS; i++)
+            {
+               Global.SELECTION_EMOJIS[i] = Global.NUM_EMOJIS[i];
+            }
+            emoteSet = true;
          }
+      }
+
+      /// <summary>
+      /// Finds a channel in a guild by id.
+      /// </summary>
+      /// <param name="id">Id of the channel.</param>
+      /// <returns>Channel if it exists, otherwise null.</returns>
+      private static SocketGuildChannel FindChannel(ulong id)
+      {
+         foreach (SocketGuild guild in client.Guilds)
+         {
+            SocketGuildChannel channel = guild.Channels.FirstOrDefault(x => x.Id == id);
+            if (channel != null)
+            {
+               return channel;
+            }
+         }
+         return null;
       }
 
       /// <summary>

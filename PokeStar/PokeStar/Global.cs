@@ -92,6 +92,8 @@ namespace PokeStar
       /// </summary>
       public static bool USE_EMPTY_RAID { get; set; }
 
+      public static bool INIT_COMPLETE { get; set; } = false;
+
       // Help command hidding *************************************************
 
       /// <summary>
@@ -307,6 +309,11 @@ namespace PokeStar
       /// Mule group limit.
       /// </summary>
       public static readonly int LIMIT_RAID_MULE_GROUP  = 6;
+
+      /// <summary>
+      /// Boss emotes on a notify message limit.
+      /// </summary>
+      public static readonly int LIMIT_RAID_BOSS_NOTIFY = 20;
 
       // Raid Group bits ******************************************************
 
@@ -947,6 +954,11 @@ namespace PokeStar
       /// Instinct role color.
       /// </summary>
       public static readonly Color ROLE_COLOR_INSTINCT = new Color(241, 196, 15);
+
+      /// <summary>
+      /// Raid role color.
+      /// </summary>
+      public static readonly Color ROLE_COLOR_RAID     = new Color(235, 52, 204);
 
       // Image processing *****************************************************
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Discord;
@@ -28,8 +29,6 @@ namespace PokeStar.ConnectionInterface
       private Dictionary<int, List<string>> Eggs;
       private Dictionary<string, Rocket> Rockets;
 
-      private const int NumSuggestions = 10;
-
       /// <summary>
       /// Creates a new Connections object.
       /// Private to implement the singleton design patturn.
@@ -49,11 +48,6 @@ namespace PokeStar.ConnectionInterface
          if (connections == null)
          {
             connections = new Connections();
-            connections.UpdatePokemonNameList();
-            connections.UpdateMoveNameList();
-            connections.UpdateRaidBossList();
-            connections.UpdateEggList();
-            connections.UpdateRocketList();
          }
          return connections;
       }
@@ -83,14 +77,43 @@ namespace PokeStar.ConnectionInterface
       /// <returns>Pokémon picture file name.</returns>
       public static string GetPokemonPicture(string pokemonName)
       {
+         pokemonName = pokemonName.Replace("’", "");
          pokemonName = pokemonName.Replace("`", "");
          pokemonName = pokemonName.Replace(" ", "_");
+         pokemonName = pokemonName.Replace("-", "_");
          pokemonName = pokemonName.Replace(".", "");
          pokemonName = pokemonName.Replace("%", "");
          pokemonName = pokemonName.Replace("\'", "");
          pokemonName = pokemonName.Replace("?", "QU");
          pokemonName = pokemonName.Replace("!", "EX");
          return pokemonName + ".png";
+      }
+
+      /// <summary>
+      /// Gets a Pokémon by its picture file.
+      /// </summary>
+      /// <param name="fileName">Name of the file.</param>
+      /// <returns>Pokémon name.</returns>
+      public static string GetPokemonFromPicture(string fileName)
+      {
+         Dictionary<string, string> ChangedPokemon = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+         {
+            ["Farfetchd"]          = "Farfetch'd",
+            ["Galarian_Farfetchd"] = "Galarian Farfetch'd",
+            ["Galarian_Mr_Mime"]   = "Galarian Mr. Mime",
+            ["Ho_Oh"]              = "Ho-Oh",
+            ["Mime_Jr"]            = "Mime Jr.",
+            ["Mr_Mime"]            = "Mr. Mime",
+            ["Mr_Rime"]            = "Mr. Rime",
+            ["Porygon_Z"]          = "Porygon-Z",
+            ["Sirfetchd"]          = "Sirfetch'd",
+            ["Unown_EX"]           = "Unown !",
+            ["Unown_QU"]           = "Unown ?",
+            ["Zygarde_10_Form"]    = "Zygarde 10% Form",
+            ["Zygarde_50_Form"]    = "Zygarde 50% Form",
+         };
+
+         return ChangedPokemon.ContainsKey(fileName) ? ChangedPokemon[fileName] : fileName.Replace('_', ' ');
       }
 
       /// <summary>
@@ -163,7 +186,9 @@ namespace PokeStar.ConnectionInterface
       /// </summary>
       public void UpdateRaidBossList()
       {
-         RaidBosses = SilphData.GetRaidBosses();
+         Dictionary<int, List<string>> bosses = SilphData.GetRaidBosses();
+
+         RaidBosses = bosses ?? new Dictionary<int, List<string>>();
       }
 
       /// <summary>
@@ -171,7 +196,9 @@ namespace PokeStar.ConnectionInterface
       /// </summary>
       public void UpdateEggList()
       {
-         Eggs = SilphData.GetEggs();
+         Dictionary<int, List<string>> eggs = SilphData.GetEggs();
+
+         Eggs = eggs ?? new Dictionary<int, List<string>>();
       }
 
       /// <summary>
@@ -179,7 +206,25 @@ namespace PokeStar.ConnectionInterface
       /// </summary>
       public void UpdateRocketList()
       {
-         Rockets = SilphData.GetRockets().Union(SilphData.GetRocketLeaders()).ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
+         Dictionary<string, Rocket> leaders = SilphData.GetRocketLeaders();
+         Dictionary<string, Rocket> grunts = SilphData.GetRockets();
+
+         if (leaders != null && grunts != null)
+         {
+            Rockets = grunts.Union(leaders).ToDictionary(k => k.Key, v => v.Value, StringComparer.OrdinalIgnoreCase);
+         }
+         else if (leaders != null)
+         {
+            Rockets = leaders;
+         }
+         else if (grunts != null)
+         {
+            Rockets = grunts;
+         }
+         else
+         {
+            Rockets = new Dictionary<string, Rocket>();
+         }
       }
 
       /// <summary>
@@ -196,48 +241,103 @@ namespace PokeStar.ConnectionInterface
 
          Dictionary<int, List<string>> newBosses = SilphData.GetRaidBosses();
 
-         bool bossesChanged = RaidBosses.Keys.Count != newBosses.Keys.Count || !RaidBosses.Keys.All(newBosses.Keys.Contains);
-
-         foreach (int tier in RaidBosses.Keys)
+         if (newBosses != null)
          {
-            bossesChanged = bossesChanged || RaidBosses[tier].Count != newBosses[tier].Count || !RaidBosses[tier].All(newBosses[tier].Contains);
-         }
 
-         if (bossesChanged)
-         {
-            if (SilphData.GetRaidBossesConfirmed())
+            bool bossesChanged = RaidBosses == null || RaidBosses.Keys.Count != newBosses.Keys.Count || !RaidBosses.Keys.All(newBosses.Keys.Contains);
+
+            foreach (int tier in newBosses.Keys)
             {
-               UpdateRaidBossList();
-               SocketGuild emoteServer = guilds.FirstOrDefault(x => x.Name.Equals(Global.EMOTE_SERVER, StringComparison.OrdinalIgnoreCase));
-               GuildEmote[] previousEmotes = emoteServer.Emotes.ToArray();
+               bossesChanged = bossesChanged || RaidBosses[tier].Count != newBosses[tier].Count || !RaidBosses[tier].All(newBosses[tier].Contains);
+            }
 
-               foreach (GuildEmote emote in emoteServer.Emotes)
+            if (bossesChanged)
+            {
+               if (SilphData.GetRaidBossesConfirmed())
                {
-                  await emoteServer.DeleteEmoteAsync(emote);
+                  UpdateRaidBosses(guilds);
                }
-
-               foreach (KeyValuePair<int, List<string>> tier in RaidBosses)
+               else
                {
-                  foreach (string boss in tier.Value)
+                  SocketGuild emoteServer = guilds.FirstOrDefault(x => x.Name.Equals(Global.EMOTE_SERVER, StringComparison.OrdinalIgnoreCase));
+                  GuildEmote[] previousEmotes = emoteServer.Emotes.ToArray();
+
+                  List<string> topBosses = newBosses[Global.MEGA_RAID_TIER].Union(newBosses[Global.LEGENDARY_RAID_TIER]).ToList();
+                  bool updateTopBosses = false;
+
+                  foreach (string boss in topBosses)
                   {
                      string fileName = GetPokemonPicture(boss);
-                     CopyFile(fileName);
-                     Image img = new Image(fileName);
-                     await emoteServer.CreateEmoteAsync(fileName.Remove(fileName.Length - 4), img);
-                     img.Dispose();
-                     DeleteFile(fileName);
+                     string emoteName = fileName.Remove(fileName.Length - 4);
+                     updateTopBosses = updateTopBosses || (previousEmotes.FirstOrDefault(x => x.Name.Equals(emoteName)) == null);
+                  }
+                  if (updateTopBosses)
+                  {
+                     UpdateRaidBosses(guilds);
+                  }
+                  else
+                  {
+                     UpdateRaidBossList();
                   }
                }
+            }
+         }
+         Global.INIT_COMPLETE = true;
+      }
 
-               Dictionary<ulong, ulong> channels = Instance().GetNotificationChannels();
+      public async Task UpdateRaidBosses(List<SocketGuild> guilds)
+      {
+         UpdateRaidBossList();
+         SocketGuild emoteServer = guilds.FirstOrDefault(x => x.Name.Equals(Global.EMOTE_SERVER, StringComparison.OrdinalIgnoreCase));
+         GuildEmote[] previousEmotes = emoteServer.Emotes.ToArray();
+         bool msgChange = false;
 
-               foreach (KeyValuePair<ulong, ulong> chan in channels)
+         foreach (KeyValuePair<int, List<string>> tier in RaidBosses)
+         {
+            foreach (string boss in tier.Value)
+            {
+               string fileName = GetPokemonPicture(boss);
+               string emoteName = fileName.Remove(fileName.Length - 4);
+               if (previousEmotes.FirstOrDefault(x => x.Name.Equals(emoteName)) == null)
                {
-                  SocketGuild guild = guilds.FirstOrDefault(x => x.Id == chan.Key);
-                  ISocketMessageChannel channel = (ISocketMessageChannel)guild.Channels.FirstOrDefault(x => x.Id == chan.Value);
-                  await ClearNotifyMessage(guild, channel.Id, previousEmotes.ToArray());
-                  await SetNotifyMessage(guild, channel, emoteServer.Emotes.ToArray());
+                  CopyFile(fileName);
+                  Image img = new Image(fileName);
+                  await emoteServer.CreateEmoteAsync(emoteName, img);
+                  img.Dispose();
+                  DeleteFile(fileName);
+                  msgChange = true;
                }
+            }
+         }
+
+         foreach (GuildEmote emote in previousEmotes)
+         {
+            bool inCurrentList = false;
+            foreach (KeyValuePair<int, List<string>> tier in RaidBosses)
+            {
+               foreach (string boss in tier.Value)
+               {
+                  string fileName = GetPokemonPicture(boss);
+                  string emoteName = fileName.Remove(fileName.Length - 4);
+                  inCurrentList = inCurrentList || emote.Name.Equals(emoteName);
+               }
+            }
+            if (!inCurrentList)
+            {
+               await emoteServer.DeleteEmoteAsync(emote);
+               msgChange = true;
+            }
+         }
+         if (msgChange)
+         {
+            Dictionary<ulong, ulong> channels = Instance().GetNotificationChannels();
+
+            foreach (KeyValuePair<ulong, ulong> chan in channels)
+            {
+               SocketGuild guild = guilds.FirstOrDefault(x => x.Id == chan.Key);
+               ISocketMessageChannel channel = (ISocketMessageChannel)guild.Channels.FirstOrDefault(x => x.Id == chan.Value);
+               await ClearNotifyMessage(guild, channel, Instance().GetNotificationMessages(guild.Id, channel.Id));
+               await SetNotifyMessage(guild, channel, emoteServer.Emotes.ToArray());
             }
          }
       }
@@ -249,37 +349,41 @@ namespace PokeStar.ConnectionInterface
       /// <returns>True if the message is a raid notification message, otherwise false.</returns>
       public static bool IsNotifyMessage(ulong id)
       {
-         return Connections.Instance().CheckNotificationMessage(id);
+         return Instance().CheckNotificationMessage(id);
       }
 
       /// <summary>
-      /// Handles a reaction on a raid notification message.
+      /// Handles a reaction added to a raid notification message.
       /// </summary>
-      /// <param name="message">Message that was reacted on.</param>
       /// <param name="reaction">Reaction that was sent.</param>
       /// <param name="guild">Guild the reaction was made in.</param>
       /// <returns>Completed Task.</returns>
-      public static async Task NotifyMessageReactionHandle(IMessage message, SocketReaction reaction, SocketGuild guild)
+      public static async Task NotifyMessageReactionAddedHandle(SocketReaction reaction, SocketGuild guild)
       {
          SocketRole role = guild.Roles.FirstOrDefault(x => x.Name.Equals(reaction.Emote.Name, StringComparison.OrdinalIgnoreCase));
 
          if (role != null)
          {
             SocketGuildUser user = guild.Users.FirstOrDefault(x => x.Id == reaction.User.Value.Id);
-
-            SocketRole currentRole = user.Roles.FirstOrDefault(x => x.Name.Equals(reaction.Emote.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (currentRole == null)
-            {
-               await user.AddRoleAsync(role);
-            }
-            else
-            {
-               await user.RemoveRoleAsync(role);
-            }
+            await user.AddRoleAsync(role);
          }
+      }
 
-         await message.RemoveReactionAsync(reaction.Emote, (SocketGuildUser)reaction.User);
+      /// <summary>
+      /// Handles a reaction removed to a raid notification message.
+      /// </summary>
+      /// <param name="reaction">Reaction that was sent.</param>
+      /// <param name="guild">Guild the reaction was made in.</param>
+      /// <returns>Completed Task.</returns>
+      public static async Task NotifyMessageReactionRemovedHandle(SocketReaction reaction, SocketGuild guild)
+      {
+         SocketRole role = guild.Roles.FirstOrDefault(x => x.Name.Equals(reaction.Emote.Name, StringComparison.OrdinalIgnoreCase));
+
+         if (role != null)
+         {
+            SocketGuildUser user = guild.Users.FirstOrDefault(x => x.Id == reaction.User.Value.Id);
+            await user.RemoveRoleAsync(role);
+         }
       }
 
       /// <summary>
@@ -293,16 +397,37 @@ namespace PokeStar.ConnectionInterface
       {
          foreach (GuildEmote emote in emotes)
          {
-            await guild.CreateRoleAsync(emote.Name, null, null, false, true, null);
+            await guild.CreateRoleAsync(emote.Name, null, Global.ROLE_COLOR_RAID, false, true, null);
          }
 
-         IUserMessage message = await ResponseMessage.SendInfoMessage(channel,
-            "React to this message to be notified when a specific raid is called.\n" +
-            "When the raid bosses change your role will be removed and you will have to re-select desired bosses.\n" +
-            "If you no longer wish to be notified for a boss, re-react for the desired boss.");
-         message.AddReactionsAsync(emotes);
+         StringBuilder messages = new StringBuilder();
 
-         Connections.Instance().UpdateNotificationMessage(guild.Id, channel.Id, message.Id);
+         var initialMessage = await ResponseMessage.SendInfoMessage(channel,
+            "React to the following messages to be notified when a specific raid is called.\n" +
+            "When the raid bosses change, your role will be removed and you will have to re-select desired bosses.\n" +
+            "If you no longer wish to be notified for a boss, re-react for the desired boss.");
+         messages.AppendLine($"{initialMessage.Id},");
+
+         StringBuilder emoteMsg = new StringBuilder();
+
+         int count;
+         for (count = 0; count < +emotes.Length; count++)
+         {
+            emoteMsg.AppendLine($"{emotes[count]} {emotes[count].Name}");
+
+            if (count % Global.LIMIT_RAID_BOSS_NOTIFY == Global.LIMIT_RAID_BOSS_NOTIFY - 1)
+            {
+               IUserMessage emoteMessage = await ResponseMessage.SendInfoMessage(channel, emoteMsg.ToString());
+               await emoteMessage.AddReactionsAsync(emotes.Skip(count - (Global.LIMIT_RAID_BOSS_NOTIFY - 1)).Take(Global.LIMIT_RAID_BOSS_NOTIFY).ToArray());
+               messages.AppendLine($"{emoteMessage.Id},");
+               emoteMsg.Clear();
+            }
+         }
+         IUserMessage finalEmoteMessage = await ResponseMessage.SendInfoMessage(channel, emoteMsg.ToString());
+         await finalEmoteMessage.AddReactionsAsync(emotes.Skip(count - (count % Global.LIMIT_RAID_BOSS_NOTIFY)).Take(Global.LIMIT_RAID_BOSS_NOTIFY).ToArray());
+         messages.AppendLine($"{finalEmoteMessage.Id},");
+
+         Instance().UpdateNotificationMessage(guild.Id, channel.Id, messages.ToString().Remove(messages.Length - 1, 1));
       }
 
       /// <summary>
@@ -312,17 +437,20 @@ namespace PokeStar.ConnectionInterface
       /// <param name="channel">Id of registered channel.</param>
       /// <param name="emotes">Emotes that represent roles.</param>
       /// <returns></returns>
-      public static async Task ClearNotifyMessage(SocketGuild guild, ulong channel, Emote[] emotes)
+      public static async Task ClearNotifyMessage(SocketGuild guild, ISocketMessageChannel channel, List<ulong> messages)
       {
-         foreach (GuildEmote emote in emotes)
+         List<SocketRole> roles = guild.Roles.Where(x => x.Color.Equals(Global.ROLE_COLOR_RAID)).ToList();
+         foreach (SocketRole role in roles)
          {
-            SocketRole role = guild.Roles.FirstOrDefault(x => x.Name.Equals(emote.Name, StringComparison.OrdinalIgnoreCase));
-            if (role != null)
-            {
-               await role.DeleteAsync();
-            }
+            await role.DeleteAsync();
          }
-         Instance().ClearNotificationMessage(guild.Id, channel);
+
+         foreach (ulong message in messages)
+         {
+            await channel.DeleteMessageAsync(message);
+         }
+
+         Instance().ClearNotificationMessage(guild.Id, channel.Id);
       }
 
       /// <summary>
@@ -372,7 +500,7 @@ namespace PokeStar.ConnectionInterface
          List<KeyValuePair<string, double>> myList = fuzzy.ToList();
          myList.Sort((pair1, pair2) => pair2.Value.CompareTo(pair1.Value));
          fuzzy = myList.ToDictionary(x => x.Key, x => x.Value);
-         return fuzzy.Keys.Take(NumSuggestions).ToList();
+         return fuzzy.Keys.Take(Global.SELECTION_EMOJIS.Length).ToList();
       }
 
       /// <summary>
@@ -398,9 +526,12 @@ namespace PokeStar.ConnectionInterface
          Dictionary<string, string> definition = SilphData.GetRaidBossDifficultyTable();
          pokemon.Difficulty = new Dictionary<string, string>();
 
-         foreach (KeyValuePair<string, int> party in difficulty)
+         if (difficulty != null && definition != null)
          {
-            pokemon.Difficulty.Add(party.Key, definition.ElementAt(party.Value).Key);
+            foreach (KeyValuePair<string, int> party in difficulty)
+            {
+               pokemon.Difficulty.Add(party.Key, definition.ElementAt(party.Value).Key);
+            }
          }
       }
 
@@ -940,12 +1071,39 @@ namespace PokeStar.ConnectionInterface
       }
 
       /// <summary>
+      /// Get notification messages for a channel.
+      /// </summary>
+      /// <param name="guild">Id of the guild.</param>
+      /// <param name="channel">Id of the channel.</param>
+      /// <returns>List of message Ids.</returns>
+      public List<ulong> GetNotificationMessages(ulong guild, ulong channel)
+      {
+         string messageStr = NONADBConnector.GetNotificationMessages(guild, channel);
+
+         if (messageStr == null)
+         {
+            return null;
+         }
+
+         string[] messages = messageStr.Split(',');
+         List<ulong> msgList = new List<ulong>();
+         foreach (string msg in messages)
+         {
+            if (!string.IsNullOrEmpty(msg) && !string.IsNullOrWhiteSpace(msg))
+            {
+               msgList.Add(ulong.Parse(msg));
+            }
+         }
+         return msgList;
+      }
+
+      /// <summary>
       /// Updates the notification message for a channel.
       /// </summary>
       /// <param name="guild">Id of the guild.</param>
       /// <param name="channel">Id of the channel.</param>
       /// <param name="message">Id of the message</param>
-      public void UpdateNotificationMessage(ulong guild, ulong channel, ulong message)
+      public void UpdateNotificationMessage(ulong guild, ulong channel, string message)
       {
          NONADBConnector.UpdateNotificationMessage(guild, channel, message);
       }
@@ -957,7 +1115,7 @@ namespace PokeStar.ConnectionInterface
       /// <param name="channel">Id of the channel.</param>
       public void ClearNotificationMessage(ulong guild, ulong channel)
       {
-         NONADBConnector.UpdateNotificationMessage(guild, channel, null);
+         NONADBConnector.UpdateNotificationMessage(guild, channel);
       }
 
       /// <summary>

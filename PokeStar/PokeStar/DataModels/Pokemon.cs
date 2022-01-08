@@ -619,6 +619,11 @@ namespace PokeStar.DataModels
       /// <returns>Raid boss difficulty as a string.</returns>
       public string DifficultyToString()
       {
+         if (Difficulty.Count == 0)
+         {
+            return "No difficulty data found";
+         }
+
          StringBuilder sb = new StringBuilder();
          foreach(KeyValuePair<string, string> party in Difficulty)
          {
